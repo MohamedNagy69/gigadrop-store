@@ -4,9 +4,11 @@ import { prisma } from '@/lib/prisma';
 import { calculatePrice } from '@/lib/utils';
 import { requireAdminSession } from '@/lib/adminGuard';
 
+import { safePrismaQuery } from '@/lib/safePrisma';
+
 export async function GET() {
   try {
-    const rows = await prisma.siteSetting.findMany();
+    const rows = await safePrismaQuery((db) => db.siteSetting.findMany(), [], 1200);
     const settings: Record<string, string> = {};
     rows.forEach((r) => {
       settings[r.key] = r.value;

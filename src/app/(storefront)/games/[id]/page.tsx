@@ -1,9 +1,9 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
 import { calculatePrice } from '@/lib/utils';
 import GameDetail from '@/components/storefront/GameDetail';
 import { FALLBACK_GAMES } from '@/lib/fallbackCatalog';
+import { safePrismaQuery } from '@/lib/safePrisma';
 import { GameItem } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -13,21 +13,16 @@ export default async function GameDetailPage({
 }: {
   params: { id: string };
 }) {
-  let game: any = null;
-  let ratePerGB = 1.0;
-  let allOtherGames: any[] = [];
+  const rateSetting = await safePrismaQuery(
+    (db) => db.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),
+    null,
+    1200
+  );
+  const ratePerGB = rateSetting ? parseFloat((rateSetting as any).value) || 1.0 : 1.0;
 
-  try {
-    const rateSetting = await Promise.race([
-      prisma.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
-    ]);
-    if (rateSetting && 'value' in rateSetting) {
-      ratePerGB = parseFloat((rateSetting as any).value) || 1.0;
-    }
-
-    game = await Promise.race([
-      prisma.game.findUnique({
+  const game = await safePrismaQuery(
+    (db) =>
+      db.game.findUnique({
         where: { id: params.id },
         include: {
           reviews: {
@@ -39,25 +34,16 @@ export default async function GameDetailPage({
           },
         },
       }),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
-    ]);
+    null,
+    1500
+  );
 
-    if (game) {
-      allOtherGames = (await Promise.race([
-        prisma.game.findMany({
-          where: { status: 'ACTIVE', id: { not: game.id } },
-        }),
-        new Promise<any[]>((resolve) => setTimeout(() => resolve([]), 2000)),
-      ])) || [];
-    }
-  } catch (err) {
-    console.warn('Database query failed in GameDetailPage, checking fallback catalog:', err);
-  }
-
-  // If not found in database, check fallback catalog
+  // If not found in database or database connection unavailable, check fallback catalog
   if (!game) {
     const fallbackMatch = FALLBACK_GAMES.find(
-      (g) => g.id === params.id || g.name.toLowerCase() === decodeURIComponent(params.id).toLowerCase()
+      (g) =>
+        g.id === params.id ||
+        g.name.toLowerCase() === decodeURIComponent(params.id).toLowerCase()
     );
 
     if (!fallbackMatch) {
@@ -99,12 +85,21 @@ export default async function GameDetailPage({
     );
   }
 
+  const allOtherGames = await safePrismaQuery(
+    (db) =>
+      db.game.findMany({
+        where: { status: 'ACTIVE', id: { not: game.id } },
+      }),
+    [],
+    1200
+  );
+
   const genresArray: string[] = Array.isArray(game.genre)
     ? (game.genre as string[])
     : [];
 
   const similarGames: GameItem[] = allOtherGames
-    .map((g) => {
+    .map((g: any) => {
       const gGenres: string[] = Array.isArray(g.genre) ? (g.genre as string[]) : [];
       const overlap = gGenres.filter((x) => genresArray.includes(x)).length;
       return {
@@ -123,10 +118,10 @@ export default async function GameDetailPage({
         overlap,
       };
     })
-    .sort((a, b) => b.overlap - a.overlap)
+    .sort((a: any, b: any) => b.overlap - a.overlap)
     .slice(0, 4);
 
-  const ratings = (game.reviews || []).map((r: any) => r.rating);
+  const ratings = ((game as any).reviews || []).map((r: any) => r.rating);
   const avgRating =
     ratings.length > 0
       ? Number((ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(1))
@@ -147,7 +142,7 @@ export default async function GameDetailPage({
     isOP: game.isOP,
     avgRating,
     reviewsCount: ratings.length,
-    reviews: game.reviews || [],
+    reviews: (game as any).reviews || [],
   };
 
   return (

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { calculatePrice } from '@/lib/utils';
 import { requireAdminSession } from '@/lib/adminGuard';
 import { FALLBACK_GAMES } from '@/lib/fallbackCatalog';
+import { safePrismaQuery } from '@/lib/safePrisma';
 
 export async function GET(req: Request) {
   try {
@@ -14,10 +15,12 @@ export async function GET(req: Request) {
     const status = searchParams.get('status') || 'ACTIVE';
     const includeAllStatuses = searchParams.get('all') === 'true';
 
-    const rateSetting = await prisma.siteSetting.findUnique({
-      where: { key: 'ratePerGB' },
-    });
-    const ratePerGB = rateSetting ? parseFloat(rateSetting.value) || 1.0 : 1.0;
+    const rateSetting = await safePrismaQuery(
+      (db) => db.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),
+      null,
+      1200
+    );
+    const ratePerGB = rateSetting ? parseFloat((rateSetting as any).value) || 1.0 : 1.0;
 
     const whereClause: any = {};
     if (!includeAllStatuses) {
@@ -31,15 +34,28 @@ export async function GET(req: Request) {
       ];
     }
 
-    const games = await prisma.game.findMany({
-      where: whereClause,
-      include: {
-        reviews: {
-          where: { isVisible: true },
-          select: { rating: true },
-        },
-      },
-    });
+    const games = await safePrismaQuery(
+      (db) =>
+        db.game.findMany({
+          where: whereClause,
+          include: {
+            reviews: {
+              where: { isVisible: true },
+              select: { rating: true },
+            },
+          },
+        }),
+      [],
+      1500
+    );
+
+    if (games.length === 0 && !search && (!genre || genre.toLowerCase() === 'all') && !includeAllStatuses) {
+      return NextResponse.json({
+        games: FALLBACK_GAMES,
+        total: FALLBACK_GAMES.length,
+        ratePerGB,
+      });
+    }
 
     let formatted = games.map((g) => {
       const genresArray: string[] = Array.isArray(g.genre)
