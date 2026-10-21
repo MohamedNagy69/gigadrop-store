@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     }
     if (status && status !== 'ALL') where.status = status;
 
-    let tickets = await prisma.ticket.findMany({
+    const tickets = await prisma.ticket.findMany({
       where,
       include: {
         user: {
@@ -39,72 +39,6 @@ export async function GET(req: Request) {
       },
       orderBy: { updatedAt: 'desc' },
     });
-
-    // Auto-initialize direct chat rooms if none exist
-    if (tickets.length === 0) {
-      if (sessionUser.role === 'CUSTOMER') {
-        const created = await prisma.ticket.create({
-          data: {
-            userId: sessionUser.id,
-            subject: `محادثة العميل — ${sessionUser.name || 'عميل'}`,
-            priority: 'HIGH',
-            status: 'OPEN',
-            messages: {
-              create: {
-                senderId: 'admin',
-                message:
-                  'أهلاً بك في شات الدعم الفني المباشر لـ GIGADROP! 👋 اكتب رسالتك أو استفسارك هنا وسيقوم الأدمن بالرد عليك مباشرة.',
-                isAdmin: true,
-              },
-            },
-          },
-          include: {
-            user: {
-              select: { id: true, name: true, email: true, phone: true },
-            },
-            messages: {
-              orderBy: { createdAt: 'asc' },
-            },
-          },
-        });
-        tickets = [created];
-      } else {
-        // For Admin: ensure at least the registered customers have an active chat room ready
-        const customers = await prisma.user.findMany({
-          where: { role: 'CUSTOMER' },
-          take: 5,
-        });
-        for (const cust of customers) {
-          await prisma.ticket.create({
-            data: {
-              userId: cust.id,
-              subject: `محادثة الدعم مع ${cust.name}`,
-              priority: 'MEDIUM',
-              status: 'OPEN',
-              messages: {
-                create: {
-                  senderId: 'admin',
-                  message: `مرحباً ${cust.name}! أهلاً بك في شات الدعم الفني المباشر لـ GIGADROP.`,
-                  isAdmin: true,
-                },
-              },
-            },
-          });
-        }
-        tickets = await prisma.ticket.findMany({
-          where,
-          include: {
-            user: {
-              select: { id: true, name: true, email: true, phone: true },
-            },
-            messages: {
-              orderBy: { createdAt: 'asc' },
-            },
-          },
-          orderBy: { updatedAt: 'desc' },
-        });
-      }
-    }
 
     return NextResponse.json({ tickets });
   } catch (error) {
@@ -127,9 +61,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       userId,
-      subject = `شات الدعم الفني — ${sessionUser.name || 'عميل'}`,
+      subject,
       priority = 'HIGH',
       message,
+      replyToSender,
+      replyToText,
     } = body;
 
     if (!message || !message.trim()) {
@@ -139,20 +75,58 @@ export async function POST(req: Request) {
       );
     }
 
-    const targetUserId =
-      sessionUser.role === 'CUSTOMER' ? sessionUser.id : userId || sessionUser.id;
+    const isCustomer = sessionUser.role === 'CUSTOMER';
+    const targetUserId = isCustomer ? sessionUser.id : userId || sessionUser.id;
 
+    const formattedMessage =
+      replyToText && replyToText.trim()
+        ? `[[QUOTE:${replyToSender || 'Message'}|${replyToText.trim()}]]\n${message.trim()}`
+        : message.trim();
+
+    // If customer already has an open chat thread, append to it instead of creating duplicates
+    const existingTicket = await prisma.ticket.findFirst({
+      where: { userId: targetUserId },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    if (existingTicket) {
+      await prisma.ticketMessage.create({
+        data: {
+          ticketId: existingTicket.id,
+          senderId: sessionUser.id,
+          message: formattedMessage,
+          isAdmin: !isCustomer,
+        },
+      });
+
+      const updatedTicket = await prisma.ticket.update({
+        where: { id: existingTicket.id },
+        data: { updatedAt: new Date() },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, phone: true },
+          },
+          messages: {
+            orderBy: { createdAt: 'asc' },
+          },
+        },
+      });
+
+      return NextResponse.json({ ticket: updatedTicket }, { status: 201 });
+    }
+
+    // Create new chat thread on first message
     const ticket = await prisma.ticket.create({
       data: {
         userId: targetUserId,
-        subject: subject.trim(),
+        subject: subject?.trim() || `${sessionUser.name || 'عميل'}`,
         priority,
         status: 'OPEN',
         messages: {
           create: {
-            senderId: targetUserId,
-            message: message.trim(),
-            isAdmin: sessionUser.role !== 'CUSTOMER',
+            senderId: sessionUser.id,
+            message: formattedMessage,
+            isAdmin: !isCustomer,
           },
         },
       },
