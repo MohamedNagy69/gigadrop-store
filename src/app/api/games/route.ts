@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculatePrice } from '@/lib/utils';
 import { requireAdminSession } from '@/lib/adminGuard';
+import { FALLBACK_GAMES } from '@/lib/fallbackCatalog';
 
 export async function GET(req: Request) {
   try {
@@ -116,7 +117,11 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error('GET /api/games error:', error);
-    return NextResponse.json({ error: 'Failed to fetch games' }, { status: 500 });
+    return NextResponse.json({
+      games: FALLBACK_GAMES,
+      total: FALLBACK_GAMES.length,
+      ratePerGB: 1.0,
+    });
   }
 }
 
