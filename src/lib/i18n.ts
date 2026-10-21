@@ -33,14 +33,14 @@ export const translations = {
     notifications: 'Notifications',
 
     // Hero & Calculator
-    availableAcrossCairo: 'AVAILABLE ACROSS CAIRO',
-    heroTitleLine1: 'Your next world.',
-    heroTitleLine2: 'Ready to drop.',
+    availableAcrossCairo: 'EXPRESS PICKUP & RETURN ACROSS CAIRO & GIZA',
+    heroTitleLine1: 'YOUR NEXT GAMING WORLD',
+    heroTitleLine2: 'LOADED & READY TO DROP.',
     heroSubtitle:
-      'Pick the games you want. Pay only for the gigabytes. We load them safely onto your drive and get you playing in 1–2 days.',
+      'Handpick your favorite PC titles and pay strictly for the gigabytes loaded at 1 EGP per GB. We pick up your storage drive across Greater Cairo, verify every file, and return it game-ready in 24–48 hours.',
     badgePricePerGB: '1 EGP per GB',
     badgeCashOnDelivery: 'Cash on delivery',
-    browseLibraryBtn: 'Browse Library ›',
+    browseLibraryBtn: 'Explore Game Library',
     priceCalculator: 'PRICE CALCULATOR',
     sizeInGigabytes: 'Size in gigabytes',
     estimatedTotal: 'ESTIMATED TOTAL',
@@ -212,14 +212,14 @@ export const translations = {
     notifications: 'الإشعارات',
 
     // Hero & Calculator
-    availableAcrossCairo: 'متاح في جميع أنحاء القاهرة',
-    heroTitleLine1: 'عالمك القادم.',
-    heroTitleLine2: 'جاهز للتحميل.',
+    availableAcrossCairo: 'التوصيل السريع متاح في القاهرة والجيزة | الدفع عند الاستلام',
+    heroTitleLine1: 'عالمك القادم من الألعاب',
+    heroTitleLine2: 'محمّل وجاهز في هاردك.',
     heroSubtitle:
-      'اختر الألعاب التي تريدها. ادفع فقط مقابل الجيجابايت. نقوم بتحميلها بأمان على الهارد الخاص بك لتلعب خلال 1–2 يوم.',
+      'اختر ألعابك المفضلة من أضخم العناوين، وادفع فقط 1 جنيه لكل جيجابايت. بنستلم هاردك من باب بيتك ونرجعهولك مفحوص بالكامل وجاهز للتشغيل واللعب فوراً في خلال 24–48 ساعة.',
     badgePricePerGB: '1 جنيه لكل جيجا',
     badgeCashOnDelivery: 'الدفع عند الاستلام',
-    browseLibraryBtn: 'تصفح الألعاب ›',
+    browseLibraryBtn: 'تصفح مكتبة الألعاب',
     priceCalculator: 'حاسبة الأسعار التفاعلية',
     sizeInGigabytes: 'المساحة المطلوبة بالجيجابايت',
     estimatedTotal: 'التكلفة التقديرية',
