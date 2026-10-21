@@ -1,6 +1,9 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { checkRateLimit } from '@/lib/security';
 
 export async function GET(req: Request) {
   try {
@@ -10,7 +13,17 @@ export async function GET(req: Request) {
 
     const where: any = {};
     if (gameId) where.gameId = gameId;
-    if (!includeHidden) where.isVisible = true;
+
+    if (includeHidden) {
+      const session = await getServerSession(authOptions);
+      const role = (session?.user as any)?.role;
+      const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'SUPPORT';
+      if (!isAdmin) {
+        where.isVisible = true;
+      }
+    } else {
+      where.isVisible = true;
+    }
 
     const reviews = await prisma.review.findMany({
       where,
@@ -29,26 +42,37 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, gameId, rating, comment } = await req.json();
-    if (!gameId || !rating) {
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+
+    if (!sessionUser?.id) {
+      return NextResponse.json(
+        { error: 'يرجى تسجيل الدخول لكتابة تقييم (Please sign in to post a review)' },
+        { status: 401 }
+      );
+    }
+
+    const rateCheck = checkRateLimit(`review:${sessionUser.id}`, 5, 5 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'عدد التقييمات كبير جداً، يرجى الانتظار قليلاً' },
+        { status: 429 }
+      );
+    }
+
+    const { gameId, rating, comment } = await req.json();
+    if (!gameId || rating === undefined) {
       return NextResponse.json({ error: 'Game ID and rating are required' }, { status: 400 });
     }
 
-    let targetUserId = userId;
-    if (!targetUserId) {
-      const demoUser = await prisma.user.findFirst({ where: { role: 'CUSTOMER' } });
-      if (!demoUser) {
-        return NextResponse.json({ error: 'Please sign in to post a review' }, { status: 401 });
-      }
-      targetUserId = demoUser.id;
-    }
+    const numericRating = Math.min(5, Math.max(1, Math.round(Number(rating))));
 
     const review = await prisma.review.create({
       data: {
-        userId: targetUserId,
+        userId: sessionUser.id,
         gameId,
-        rating: Number(rating),
-        comment: comment || '',
+        rating: numericRating,
+        comment: comment ? String(comment).trim().slice(0, 1000) : '',
       },
       include: {
         user: { select: { id: true, name: true, avatar: true } },

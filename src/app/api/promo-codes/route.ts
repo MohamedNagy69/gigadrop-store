@@ -5,6 +5,9 @@ import { requireAdminSession } from '@/lib/adminGuard';
 
 export async function GET() {
   try {
+    const auth = await requireAdminSession();
+    if (!auth.authorized) return auth.response;
+
     const promoCodes = await prisma.promoCode.findMany({
       orderBy: { createdAt: 'desc' },
     });

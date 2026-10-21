@@ -31,28 +31,30 @@ export const authOptions: NextAuthOptions = {
             where: { email: normalizedEmail },
           });
         } catch {
-          // Fallback if production DB is not connected yet
-          if (normalizedEmail === 'admin@gigadrop.eg' && credentials.password === 'Admin@123') {
-            return {
-              id: 'admin-fallback-id',
-              name: 'GIGADROP Admin',
-              email: 'admin@gigadrop.eg',
-              role: 'SUPER_ADMIN',
-              referralCode: 'GIGA-ADMIN',
-              phone: '+20 100 999 8877',
-              address: 'Cairo, Egypt',
-            };
-          }
-          if (normalizedEmail === 'ahmed@gigadrop.eg' && credentials.password === 'Customer@123') {
-            return {
-              id: 'customer-fallback-id',
-              name: 'Ahmed Hassan',
-              email: 'ahmed@gigadrop.eg',
-              role: 'CUSTOMER',
-              referralCode: 'GIGA-AHMED24',
-              phone: '+20 101 234 5678',
-              address: 'Nasr City, Cairo',
-            };
+          // Fallback if production DB is not connected yet (can be disabled via DISABLE_FALLBACK_AUTH=true)
+          if (process.env.DISABLE_FALLBACK_AUTH !== 'true') {
+            if (normalizedEmail === 'admin@gigadrop.eg' && credentials.password === 'Admin@123') {
+              return {
+                id: 'admin-fallback-id',
+                name: 'GIGADROP Admin',
+                email: 'admin@gigadrop.eg',
+                role: 'SUPER_ADMIN',
+                referralCode: 'GIGA-ADMIN',
+                phone: '+20 100 999 8877',
+                address: 'Cairo, Egypt',
+              };
+            }
+            if (normalizedEmail === 'ahmed@gigadrop.eg' && credentials.password === 'Customer@123') {
+              return {
+                id: 'customer-fallback-id',
+                name: 'Ahmed Hassan',
+                email: 'ahmed@gigadrop.eg',
+                role: 'CUSTOMER',
+                referralCode: 'GIGA-AHMED24',
+                phone: '+20 101 234 5678',
+                address: 'Nasr City, Cairo',
+              };
+            }
           }
         }
         if (!user || !user.isActive) {

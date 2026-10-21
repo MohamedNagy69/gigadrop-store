@@ -1,29 +1,56 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import {
   calculatePrice,
   generateFawryRef,
   generateOrderNumber,
 } from '@/lib/utils';
+import { checkRateLimit, getClientIp, isValidEmail, sanitizePhone } from '@/lib/security';
 
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+
+    if (!sessionUser?.id) {
+      return NextResponse.json(
+        { error: 'يرجى تسجيل الدخول لعرض الطلبات (Unauthorized)' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
     const status = searchParams.get('status');
     const search = searchParams.get('search')?.trim();
 
+    const isAdmin =
+      sessionUser.role === 'ADMIN' ||
+      sessionUser.role === 'SUPER_ADMIN' ||
+      sessionUser.role === 'SUPPORT';
+
     const where: any = {};
-    if (userId) where.userId = userId;
+
+    // IDOR Protection: Customers can ONLY view their own orders
+    if (!isAdmin) {
+      where.userId = sessionUser.id;
+    } else if (userId) {
+      where.userId = userId;
+    }
+
     if (status && status !== 'ALL') where.status = status;
-    if (search) {
+    if (search && isAdmin) {
       where.OR = [
         { orderNumber: { contains: search } },
         { customerName: { contains: search } },
         { phone: { contains: search } },
         { email: { contains: search } },
       ];
+    } else if (search && !isAdmin) {
+      where.orderNumber = { contains: search };
     }
 
     const orders = await prisma.order.findMany({
@@ -53,6 +80,18 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    const rateCheck = checkRateLimit(`order_create:${clientIp}`, 10, 10 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'عدد الطلبات كبير جداً، يرجى الانتظار قليلاً (Rate limit exceeded)' },
+        { status: 429 }
+      );
+    }
+
+    const session = await getServerSession(authOptions);
+    const sessionUserId = (session?.user as any)?.id;
+
     const body = await req.json();
     const {
       userId,
@@ -77,6 +116,17 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    const cleanEmail = email.toLowerCase().trim();
+    if (!isValidEmail(cleanEmail)) {
+      return NextResponse.json(
+        { error: 'صيغة البريد الإلكتروني غير صالحة (Invalid email)' },
+        { status: 400 }
+      );
+    }
+
+    // Force authenticated user's ID if logged in to prevent account spoofing
+    const verifiedUserId = sessionUserId || userId || null;
 
     const rateSetting = await prisma.siteSetting.findUnique({
       where: { key: 'ratePerGB' },
@@ -187,11 +237,11 @@ export async function POST(req: Request) {
       paymentRef = `COD-${orderNumber}`;
     }
 
-    // Link to existing user by userId or email if present
-    let linkedUserId = userId || null;
+    // Link to existing user by verifiedUserId or email if present
+    let linkedUserId = verifiedUserId || null;
     if (!linkedUserId) {
       const existingUser = await prisma.user.findUnique({
-        where: { email: email.toLowerCase().trim() },
+        where: { email: cleanEmail },
       });
       if (existingUser) linkedUserId = existingUser.id;
     }
@@ -208,15 +258,15 @@ export async function POST(req: Request) {
         paymentStatus,
         paymentRef,
         paidAt: paymentStatus === 'PAID' ? new Date() : null,
-        customerName: customerName.trim(),
-        phone: phone.trim(),
-        email: email.toLowerCase().trim(),
-        whatsapp: whatsapp?.trim() || phone.trim(),
-        address: address.trim(),
+        customerName: customerName.trim().slice(0, 100),
+        phone: sanitizePhone(phone),
+        email: cleanEmail,
+        whatsapp: whatsapp ? sanitizePhone(whatsapp) : sanitizePhone(phone),
+        address: address.trim().slice(0, 255),
         birthdate: birthdate ? new Date(birthdate) : null,
         promoCode: promoCode ? promoCode.trim().toUpperCase() : null,
         referralCodeUsed: referralCode ? referralCode.trim().toUpperCase() : null,
-        notes: notes || null,
+        notes: notes ? String(notes).trim().slice(0, 500) : null,
         items: {
           create: dbGames.map((g) => ({
             gameId: g.id,

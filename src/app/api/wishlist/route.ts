@@ -1,17 +1,19 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
-    if (!userId) {
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+    if (!sessionUser?.id) {
       return NextResponse.json({ wishlist: [] });
     }
 
     const wishlist = await prisma.wishlist.findMany({
-      where: { userId },
+      where: { userId: sessionUser.id },
       include: { game: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -24,17 +26,23 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, gameId } = await req.json();
-    if (!userId || !gameId) {
-      return NextResponse.json({ error: 'Missing userId or gameId' }, { status: 400 });
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+    if (!sessionUser?.id) {
+      return NextResponse.json({ error: 'Please sign in to add to wishlist' }, { status: 401 });
+    }
+
+    const { gameId } = await req.json();
+    if (!gameId) {
+      return NextResponse.json({ error: 'Missing gameId' }, { status: 400 });
     }
 
     const item = await prisma.wishlist.upsert({
       where: {
-        userId_gameId: { userId, gameId },
+        userId_gameId: { userId: sessionUser.id, gameId },
       },
       update: {},
-      create: { userId, gameId },
+      create: { userId: sessionUser.id, gameId },
     });
 
     return NextResponse.json({ item }, { status: 201 });

@@ -1,9 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminSession } from '@/lib/adminGuard';
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAdminSession();
+    if (!auth.authorized) return auth.response;
+
     const { orderId, verified = true, transactionId } = await req.json();
     if (!orderId) {
       return NextResponse.json({ error: 'orderId is required' }, { status: 400 });

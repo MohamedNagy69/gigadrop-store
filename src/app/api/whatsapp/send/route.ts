@@ -2,9 +2,13 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getWhatsAppUrl } from '@/lib/utils';
+import { requireAdminSession } from '@/lib/adminGuard';
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAdminSession();
+    if (!auth.authorized) return auth.response;
+
     const { orderId, phone, template = 'custom', message } = await req.json();
     if (!phone || !message) {
       return NextResponse.json({ error: 'Phone and message are required' }, { status: 400 });
@@ -34,6 +38,9 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
+    const auth = await requireAdminSession();
+    if (!auth.authorized) return auth.response;
+
     const logs = await prisma.whatsAppLog.findMany({
       orderBy: { createdAt: 'desc' },
       take: 50,

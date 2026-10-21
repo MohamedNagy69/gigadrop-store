@@ -3,16 +3,27 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdminSession } from '@/lib/adminGuard';
 
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+
+    if (!sessionUser?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
 
-    const sessionUser = session?.user as any;
+    const isAdmin =
+      sessionUser.role === 'ADMIN' ||
+      sessionUser.role === 'SUPER_ADMIN' ||
+      sessionUser.role === 'SUPPORT';
+
     const where: any = {};
-    if (sessionUser?.role === 'CUSTOMER') {
+    if (!isAdmin) {
       where.userId = sessionUser.id;
     } else if (userId) {
       where.userId = userId;
@@ -34,6 +45,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAdminSession();
+    if (!auth.authorized) return auth.response;
+
     const { userId, title, message, type = 'SYSTEM' } = await req.json();
     if (!userId || !title || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

@@ -9,6 +9,18 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+
+    if (!sessionUser?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isAdmin =
+      sessionUser.role === 'ADMIN' ||
+      sessionUser.role === 'SUPER_ADMIN' ||
+      sessionUser.role === 'SUPPORT';
+
     const ticket = await prisma.ticket.findUnique({
       where: { id: params.id },
       include: {
@@ -19,6 +31,11 @@ export async function GET(
 
     if (!ticket) {
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
+    }
+
+    // IDOR Protection: Customers can only read their own tickets
+    if (!isAdmin && ticket.userId !== sessionUser.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     return NextResponse.json({ ticket });
@@ -35,10 +52,30 @@ export async function POST(
     const session = await getServerSession(authOptions);
     const sessionUser = session?.user as any;
 
+    if (!sessionUser?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isAdmin =
+      sessionUser.role === 'ADMIN' ||
+      sessionUser.role === 'SUPER_ADMIN' ||
+      sessionUser.role === 'SUPPORT';
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!ticket) {
+      return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
+    }
+
+    // IDOR Protection: Non-admins can only reply to their own tickets
+    if (!isAdmin && ticket.userId !== sessionUser.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const {
-      senderId = sessionUser?.id || 'system',
       message,
-      isAdmin,
       status,
       replyToSender,
       replyToText,
@@ -48,11 +85,9 @@ export async function POST(
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    // Determine isAdmin from session role if available, otherwise fallback to payload
-    const senderIsAdmin =
-      sessionUser?.role !== undefined
-        ? sessionUser.role !== 'CUSTOMER'
-        : Boolean(isAdmin);
+    // Anti-Spoofing: Derive sender identity and admin status strictly from session
+    const senderId = sessionUser.id;
+    const senderIsAdmin = isAdmin;
 
     const formattedMessage =
       replyToText && replyToText.trim()
@@ -68,7 +103,7 @@ export async function POST(
       },
     });
 
-    const ticket = await prisma.ticket.update({
+    const updatedTicket = await prisma.ticket.update({
       where: { id: params.id },
       data: {
         status: status || (senderIsAdmin ? 'IN_PROGRESS' : 'OPEN'),
@@ -83,7 +118,7 @@ export async function POST(
     if (senderIsAdmin) {
       await prisma.notification.create({
         data: {
-          userId: ticket.userId,
+          userId: updatedTicket.userId,
           title: 'رد جديد من الدعم الفني 💬',
           message: `قام فريق الدعم الفني بالرد على محادثتك.`,
           type: 'SYSTEM',
@@ -91,7 +126,7 @@ export async function POST(
       });
     }
 
-    return NextResponse.json({ message: msg, ticket }, { status: 201 });
+    return NextResponse.json({ message: msg, ticket: updatedTicket }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to send reply' }, { status: 500 });
   }

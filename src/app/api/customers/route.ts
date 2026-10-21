@@ -1,9 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminSession } from '@/lib/adminGuard';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireAdminSession();
+    if (!auth.authorized) return auth.response;
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search')?.trim();
 

@@ -36,9 +36,19 @@ export async function POST(req: Request) {
     const auth = await requireAdminSession();
     if (!auth.authorized) return auth.response;
 
+    const callerRole = (auth.session?.user as any)?.role;
+
     const { name, email, phone, role = 'ADMIN', password = 'Admin@123' } = await req.json();
     if (!name || !email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
+    }
+
+    // Privilege Escalation Prevention: Only SUPER_ADMIN can create SUPER_ADMIN accounts
+    if (role === 'SUPER_ADMIN' && callerRole !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Only SUPER_ADMIN can create SUPER_ADMIN accounts' },
+        { status: 403 }
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,7 +82,17 @@ export async function PATCH(req: Request) {
     const auth = await requireAdminSession();
     if (!auth.authorized) return auth.response;
 
+    const callerRole = (auth.session?.user as any)?.role;
     const { id, role, isActive } = await req.json();
+
+    // Privilege Escalation Prevention: Only SUPER_ADMIN can promote to SUPER_ADMIN
+    if (role === 'SUPER_ADMIN' && callerRole !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Only SUPER_ADMIN can promote users to SUPER_ADMIN' },
+        { status: 403 }
+      );
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: {

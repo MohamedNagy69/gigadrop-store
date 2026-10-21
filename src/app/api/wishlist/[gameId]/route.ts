@@ -1,5 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
@@ -7,14 +9,14 @@ export async function DELETE(
   { params }: { params: { gameId: string } }
 ) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+    if (!sessionUser?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await prisma.wishlist.deleteMany({
-      where: { userId, gameId: params.gameId },
+      where: { userId: sessionUser.id, gameId: params.gameId },
     });
 
     return NextResponse.json({ success: true });

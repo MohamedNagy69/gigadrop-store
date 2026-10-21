@@ -3,9 +3,20 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { generateReferralCode } from '@/lib/utils';
+import { checkRateLimit, getClientIp, isValidEmail, sanitizePhone } from '@/lib/security';
 
 export async function POST(req: Request) {
   try {
+    // 1. Rate Limiting: Max 5 registration attempts per IP every 15 minutes
+    const clientIp = getClientIp(req);
+    const rateCheck = checkRateLimit(`register:${clientIp}`, 5, 15 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'عدد محاولات التسجيل كبير جداً. يرجى المحاولة بعد قليل (Too many registration attempts)' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { name, email, phone, whatsapp, address, password, birthdate, referredBy } = body;
 
@@ -17,6 +28,21 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    if (!isValidEmail(cleanEmail)) {
+      return NextResponse.json(
+        { error: 'صيغة البريد الإلكتروني غير صالحة (Invalid email format)' },
+        { status: 400 }
+      );
+    }
+
+    // Enforce minimum password length
+    if (typeof password !== 'string' || password.length < 8) {
+      return NextResponse.json(
+        { error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل (Password must be at least 8 characters)' },
+        { status: 400 }
+      );
+    }
+
     const existing = await prisma.user.findUnique({ where: { email: cleanEmail } });
     if (existing) {
       return NextResponse.json(
@@ -28,19 +54,22 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
     let referralCode = generateReferralCode(name);
 
-    // Ensure unique referralCode
-    const codeExists = await prisma.user.findUnique({ where: { referralCode } });
-    if (codeExists) {
-      referralCode = `${referralCode}${Math.floor(Math.random() * 9)}`;
+    // Cryptographically resilient referralCode generation
+    let attempts = 0;
+    while (attempts < 5) {
+      const codeExists = await prisma.user.findUnique({ where: { referralCode } });
+      if (!codeExists) break;
+      referralCode = `${generateReferralCode(name)}${Math.floor(1000 + Math.random() * 9000)}`;
+      attempts++;
     }
 
     const user = await prisma.user.create({
       data: {
-        name: name.trim(),
+        name: name.trim().slice(0, 100),
         email: cleanEmail,
-        phone: phone || null,
-        whatsapp: whatsapp || phone || null,
-        address: address || null,
+        phone: phone ? sanitizePhone(phone) : null,
+        whatsapp: whatsapp ? sanitizePhone(whatsapp) : (phone ? sanitizePhone(phone) : null),
+        address: address ? address.trim().slice(0, 255) : null,
         birthdate: birthdate ? new Date(birthdate) : null,
         password: hashedPassword,
         referralCode,

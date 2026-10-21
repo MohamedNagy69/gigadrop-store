@@ -8,9 +8,13 @@ export async function POST(req: Request) {
   try {
     const auth = await requireAdminSession();
     if (!auth.authorized) {
-      // Allow bootstrap if no users exist in database yet
-      const userCount = await prisma.user.count().catch(() => 0);
-      if (userCount > 0) {
+      // Only allow unauthenticated seed if explicitly configured with ADMIN_SEED_SECRET or in local development
+      const seedSecret = req.headers.get('x-seed-secret');
+      const isAllowedSecret =
+        process.env.ADMIN_SEED_SECRET && seedSecret === process.env.ADMIN_SEED_SECRET;
+      const isDevBootstrap = process.env.NODE_ENV === 'development';
+
+      if (!isAllowedSecret && !isDevBootstrap) {
         return auth.response;
       }
     }

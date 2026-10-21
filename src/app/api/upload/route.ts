@@ -3,6 +3,16 @@ import { NextResponse } from 'next/server';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 import { requireAdminSession } from '@/lib/adminGuard';
+import { isValidHttpUrl } from '@/lib/security';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB max
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/avif',
+];
 
 export async function POST(req: Request) {
   try {
@@ -23,15 +33,37 @@ export async function POST(req: Request) {
         );
       }
 
+      // 1. File Size Validation (Prevent DoS / Storage Exhaustion)
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: 'حجم الصورة كبير جداً، الحد الأقصى 5 ميجابايت (Max file size: 5MB)' },
+          { status: 400 }
+        );
+      }
+
+      // 2. MIME Type Validation (Strictly block SVG and non-images)
+      if (!ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+        return NextResponse.json(
+          { error: 'نوع الملف غير مدعوم. يرجى اختيار JPG, PNG, WEBP, أو AVIF فقط' },
+          { status: 400 }
+        );
+      }
+
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // Clean filename and keep extension
+      // Clean filename and keep safe extension
       const originalName = file.name || 'cover.jpg';
       const ext = path.extname(originalName).toLowerCase() || '.jpg';
-      const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif', '.svg'];
-      const safeExt = allowedExts.includes(ext) ? ext : '.jpg';
+      const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
+      if (!allowedExts.includes(ext)) {
+        return NextResponse.json(
+          { error: 'امتداد الملف غير مسموح به (Forbidden extension)' },
+          { status: 400 }
+        );
+      }
 
+      const safeExt = ext;
       const baseName = path
         .basename(originalName, ext)
         .replace(/[^a-zA-Z0-9_-]/g, '-')
@@ -56,6 +88,12 @@ export async function POST(req: Request) {
     // Fallback for JSON body with imageUrl
     const body = await req.json();
     const { imageUrl } = body;
+    if (imageUrl && !isValidHttpUrl(imageUrl)) {
+      return NextResponse.json(
+        { error: 'رابط الصورة غير صالح (Invalid image URL protocol)' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({
       url:
         imageUrl ||

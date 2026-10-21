@@ -1,12 +1,18 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { escapeHtml } from '@/lib/security';
 
 export async function GET(
   req: Request,
   { params }: { params: { orderId: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as any;
+
     const order = await prisma.order.findFirst({
       where: {
         OR: [{ id: params.orderId }, { orderNumber: params.orderId }],
@@ -22,7 +28,28 @@ export async function GET(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    const invoiceNumber = order.orderNumber.replace('GD-', 'INV-');
+    const isAdmin =
+      sessionUser?.role === 'ADMIN' ||
+      sessionUser?.role === 'SUPER_ADMIN' ||
+      sessionUser?.role === 'SUPPORT';
+
+    const isOwner = sessionUser?.id && order.userId === sessionUser.id;
+    const { searchParams } = new URL(req.url);
+    const phoneParam = searchParams.get('phone')?.trim();
+    const isGuestVerified =
+      !order.userId &&
+      phoneParam &&
+      (order.phone === phoneParam || order.phone.endsWith(phoneParam));
+
+    if (!isAdmin && !isOwner && !isGuestVerified) {
+      return NextResponse.json(
+        { error: 'غير مصرح بعرض هذه الفاتورة (Unauthorized invoice access)' },
+        { status: 403 }
+      );
+    }
+
+    const invoiceNumber = escapeHtml(order.orderNumber.replace('GD-', 'INV-'));
+    const safeOrderNumber = escapeHtml(order.orderNumber);
     const subtotal = Number((order.totalPrice + order.discount).toFixed(2));
     const trackUrl = `http://localhost:3000/track?order=${encodeURIComponent(order.orderNumber)}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
@@ -73,9 +100,9 @@ export async function GET(
         <div style="color: #888; font-size: 13px; margin-top: 4px;">Games by the Gigabyte · Cairo, Egypt</div>
       </div>
       <div style="text-align: right;">
-        <div class="badge">${order.status}</div>
+        <div class="badge">${escapeHtml(order.status)}</div>
         <div style="font-size: 20px; font-weight: 800; margin-top: 8px;">${invoiceNumber}</div>
-        <div style="font-size: 12px; color: #888;">Order: ${order.orderNumber}</div>
+        <div style="font-size: 12px; color: #888;">Order: ${safeOrderNumber}</div>
         <div style="font-size: 12px; color: #888;">Date: ${new Date(order.createdAt).toLocaleDateString()}</div>
       </div>
     </div>
@@ -84,18 +111,18 @@ export async function GET(
       <div>
         <div class="label">Billed & Delivered To</div>
         <div class="val">
-          <strong>${order.customerName}</strong><br/>
-          Phone: ${order.phone}<br/>
-          Email: ${order.email}<br/>
-          Address: ${order.address}
+          <strong>${escapeHtml(order.customerName)}</strong><br/>
+          Phone: ${escapeHtml(order.phone)}<br/>
+          Email: ${escapeHtml(order.email)}<br/>
+          Address: ${escapeHtml(order.address)}
         </div>
       </div>
       <div>
         <div class="label">Payment & Data Summary</div>
         <div class="val">
-          Payment Method: <strong>${order.paymentMethod}</strong><br/>
-          Payment Status: <strong>${order.paymentStatus}</strong><br/>
-          Reference: ${order.paymentRef || 'N/A'}<br/>
+          Payment Method: <strong>${escapeHtml(order.paymentMethod)}</strong><br/>
+          Payment Status: <strong>${escapeHtml(order.paymentStatus)}</strong><br/>
+          Reference: ${escapeHtml(order.paymentRef || 'N/A')}<br/>
           Total Data Size: <strong>${order.totalGB.toFixed(2)} GB</strong>
         </div>
       </div>
@@ -116,7 +143,7 @@ export async function GET(
             (item, idx) => `
           <tr>
             <td>${String(idx + 1).padStart(2, '0')}</td>
-            <td><strong>${item.game?.name || 'PC Game'}</strong></td>
+            <td><strong>${escapeHtml(item.game?.name || 'PC Game')}</strong></td>
             <td>${item.sizeGB.toFixed(2)} GB</td>
             <td style="text-align: right;">${item.price.toFixed(2)} EGP</td>
           </tr>

@@ -1,9 +1,19 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    const rateCheck = checkRateLimit(`promo_validate:${clientIp}`, 15, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'عدد محاولات تجربة البروموكود كثيرة جداً، يرجى الانتظار دقيقة' },
+        { status: 429 }
+      );
+    }
+
     const { code, subtotal = 0 } = await req.json();
     if (!code) {
       return NextResponse.json({ error: 'Promo code is required' }, { status: 400 });

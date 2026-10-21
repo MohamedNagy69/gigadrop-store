@@ -26,6 +26,16 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // 1b. Protect /api/admin routes: Reject with 403 JSON if not authenticated admin
+  if (pathname.startsWith('/api/admin')) {
+    if (!token || !isAdminRole) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Admin privileges required' },
+        { status: 403 }
+      );
+    }
+  }
+
   // 2. Protect /dashboard routes: Only authenticated Customer role allowed
   if (pathname.startsWith('/dashboard')) {
     if (!token) {
@@ -68,6 +78,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/api/admin/:path*',
     '/dashboard/:path*',
     '/contact',
     '/track',
