@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import Link from 'next/link';
 import gsap from 'gsap';
 import { HardDrive, ShieldCheck, Gamepad2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useThemeStore } from '@/stores/themeStore';
 import { translations } from '@/lib/i18n';
+import GamingHeroVisual from './GamingHeroVisual';
 
 export default function Hero() {
   const heroRef = useRef<HTMLElement | null>(null);
@@ -18,7 +18,7 @@ export default function Hero() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         '.hero-animate',
-        { opacity: 0, y: 24 },
+        { opacity: 0, y: 22 },
         {
           opacity: 1,
           y: 0,
@@ -35,38 +35,38 @@ export default function Hero() {
   return (
     <section
       ref={heroRef}
-      className={`relative min-h-[82vh] overflow-hidden border-b border-[var(--border)] pt-32 pb-24 sm:pt-40 sm:pb-32 flex items-center ${
+      dir={isAr ? 'rtl' : 'ltr'}
+      className={`relative min-h-[85vh] overflow-hidden border-b border-[var(--border)] pt-28 pb-20 sm:pt-36 sm:pb-28 flex items-center ${
         isAr ? 'font-cairo' : 'font-sans'
       }`}
     >
-      {/* Background Cyber Grid */}
+      {/* Background Cyber Grid & Subtle Ambient Lighting */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       >
-        {/* Subtle Ambient Glow */}
-        <div className="absolute right-1/4 top-1/3 h-[500px] w-[500px] rounded-full bg-[#CCFF00]/[0.05] dark:bg-[#CCFF00]/[0.05] light:bg-emerald-600/[0.06] blur-[150px]" />
+        {/* Soft Radial Ambient Glow */}
+        <div
+          className={`absolute ${
+            isAr ? 'left-1/4' : 'right-1/4'
+          } top-1/3 h-[520px] w-[520px] rounded-full bg-[#CCFF00]/[0.06] dark:bg-[#CCFF00]/[0.06] light:bg-emerald-600/[0.05] blur-[150px]`}
+        />
 
-        {/* Tactical Grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] light:bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_90%)]" />
+        {/* Clean Tactical Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] light:bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_center,black_45%,transparent_90%)]" />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[1240px] px-6 sm:px-8">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8">
-          {/* Main Content Column (Left in LTR, Right in RTL) */}
+      <div className="relative z-10 mx-auto w-full max-w-[1260px] px-6 sm:px-8">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          
+          {/* Main Content Column (Right in RTL Arabic, Left in LTR English) */}
           <div
-            className={`lg:col-span-8 flex flex-col ${
+            className={`lg:col-span-7 flex flex-col ${
               isAr ? 'text-right items-start' : 'text-left items-start'
             }`}
           >
-            {/* Top Status Pill */}
-            <div className="hero-animate mb-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800">
-              <span className="h-2 w-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-600 shadow-[0_0_8px_#CCFF00]" />
-              <span>{t.availableAcrossCairo}</span>
-            </div>
-
             {/* Main Headline */}
-            <h1 className="hero-animate text-5xl sm:text-6xl md:text-7xl lg:text-[82px] font-black tracking-tight leading-[1.06]">
+            <h1 className="hero-animate text-5xl sm:text-6xl md:text-7xl lg:text-[78px] font-black tracking-tight leading-[1.08]">
               <span className="block text-white dark:text-white light:text-slate-950">
                 {t.heroTitleLine1}
               </span>
@@ -76,15 +76,15 @@ export default function Hero() {
             </h1>
 
             {/* Subtitle */}
-            <p className="hero-animate mt-6 max-w-xl text-base sm:text-lg leading-[1.7] text-zinc-400 dark:text-zinc-400 light:text-slate-600 font-normal">
+            <p className="hero-animate mt-6 max-w-xl text-base sm:text-lg leading-[1.75] text-zinc-400 dark:text-zinc-400 light:text-slate-600 font-normal">
               {t.heroSubtitle}
             </p>
 
-            {/* Badges Strip (Pills) + Browse CTA */}
+            {/* CTA Button + Info Badges (Matching reference exactly) */}
             <div className="hero-animate mt-8 flex flex-wrap items-center gap-3 sm:gap-3.5">
               <a
                 href="#library"
-                className="inline-flex h-11 items-center gap-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-700 px-6 text-xs sm:text-sm font-black text-black light:text-white shadow-[0_0_20px_rgba(204,255,0,0.35)] light:shadow-[0_4px_14px_rgba(22,101,52,0.3)] transition-all hover:scale-105 hover:bg-[#B8E600] light:hover:bg-emerald-800"
+                className="inline-flex h-12 items-center gap-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-700 px-7 text-xs sm:text-sm font-black text-black light:text-white shadow-[0_0_24px_rgba(204,255,0,0.35)] light:shadow-[0_4px_16px_rgba(22,101,52,0.3)] transition-all hover:scale-105 hover:bg-[#B8E600] light:hover:bg-emerald-800"
               >
                 <Gamepad2 className="h-4 w-4" />
                 <span>{t.browseLibraryBtn}</span>
@@ -95,37 +95,23 @@ export default function Hero() {
                 )}
               </a>
 
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-4 py-2.5 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md">
-                <HardDrive className="h-4 w-4 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
-                <span>{t.badgePricePerGB}</span>
-              </div>
-
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-4 py-2.5 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-4 py-3 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md">
                 <ShieldCheck className="h-4 w-4 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
                 <span>{t.badgeCashOnDelivery}</span>
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-4 py-3 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md">
+                <HardDrive className="h-4 w-4 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
+                <span>{t.badgePricePerGB}</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Brand Orbit Rings & "G" Monogram Watermark (No Calculator) */}
-          <div className="hidden lg:col-span-4 lg:flex items-center justify-center relative select-none pointer-events-none">
-            {/* Outer Concentric Orbit Ring */}
-            <div className="absolute h-[420px] w-[420px] rounded-full border border-white/[0.06] dark:border-white/[0.06] light:border-slate-300/40" />
-
-            {/* Inner Concentric Orbit Ring */}
-            <div className="absolute h-[300px] w-[300px] rounded-full border border-white/[0.04] dark:border-white/[0.04] light:border-slate-300/30" />
-
-            {/* Subtle Neon Center Flare */}
-            <div className="absolute h-[240px] w-[240px] rounded-full bg-[#CCFF00]/[0.04] dark:bg-[#CCFF00]/[0.04] light:bg-emerald-600/[0.04] blur-[80px]" />
-
-            {/* Giant Monogram "G" Watermark */}
-            <span
-              className="text-[340px] font-black text-white/[0.04] dark:text-white/[0.04] light:text-slate-900/[0.05] leading-none tracking-tighter"
-              aria-hidden="true"
-            >
-              G
-            </span>
+          {/* Visual Column (Left in RTL Arabic, Right in LTR English) */}
+          <div className="lg:col-span-5 flex items-center justify-center">
+            <GamingHeroVisual />
           </div>
+
         </div>
       </div>
     </section>
