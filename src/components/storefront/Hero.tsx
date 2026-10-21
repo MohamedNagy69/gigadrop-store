@@ -118,17 +118,6 @@ export default function Hero() {
       <div className="relative z-10 mx-auto max-w-[1240px] px-4 sm:px-6">
         {/* Main Hero Header Stack */}
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          {/* Top Status Telemetry Pill */}
-          <div className="hero-animate mb-6 inline-flex items-center gap-2.5 rounded-full border border-emerald-700/30 dark:border-[#CCFF00]/35 bg-white/90 dark:bg-zinc-950/80 px-4 py-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:shadow-[0_0_20px_rgba(204,255,0,0.15)] backdrop-blur-xl transition-transform hover:scale-[1.02]">
-            <span className="relative flex h-2.5 w-2.5 items-center justify-center">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-600 dark:bg-[#CCFF00] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600 dark:bg-[#CCFF00]" />
-            </span>
-            <span className="text-xs font-bold uppercase tracking-[0.08em] text-emerald-800 dark:text-[#CCFF00]">
-              {t.availableAcrossCairo}
-            </span>
-          </div>
-
           {/* Epic Main Heading */}
           <h1 className="hero-animate text-4xl sm:text-6xl lg:text-[74px] font-black leading-[1.16] tracking-tight">
             <span className="block text-transparent bg-clip-text bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 dark:from-white dark:via-zinc-100 dark:to-zinc-300">
