@@ -14,17 +14,23 @@ export default async function HomePage() {
   let dbGames: any[] = [];
 
   try {
-    const rateSetting = await prisma.siteSetting.findUnique({
-      where: { key: 'ratePerGB' },
-    });
-    ratePerGB = rateSetting ? parseFloat(rateSetting.value) || 1.0 : 1.0;
+    const rateSetting = await Promise.race([
+      prisma.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
+    ]);
+    if (rateSetting && 'value' in rateSetting) {
+      ratePerGB = parseFloat((rateSetting as any).value) || 1.0;
+    }
 
-    dbGames = await prisma.game.findMany({
-      where: { status: 'ACTIVE' },
-      orderBy: [{ isFeatured: 'desc' }, { releaseYear: 'desc' }],
-    });
+    dbGames = (await Promise.race([
+      prisma.game.findMany({
+        where: { status: 'ACTIVE' },
+        orderBy: [{ isFeatured: 'desc' }, { releaseYear: 'desc' }],
+      }),
+      new Promise<any[]>((resolve) => setTimeout(() => resolve([]), 2500)),
+    ])) || [];
   } catch (err) {
-    console.error('Database fetch error on HomePage:', err);
+    console.warn('Database fetch error on HomePage, using fallback catalog:', err);
   }
 
   const games: GameItem[] =
