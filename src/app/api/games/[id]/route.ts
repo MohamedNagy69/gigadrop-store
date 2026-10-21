@@ -3,35 +3,75 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculatePrice } from '@/lib/utils';
 import { requireAdminSession } from '@/lib/adminGuard';
+import { FALLBACK_GAMES } from '@/lib/fallbackCatalog';
+import { safePrismaQuery } from '@/lib/safePrisma';
 
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const game = await prisma.game.findUnique({
-      where: { id: params.id },
-      include: {
-        reviews: {
-          where: { isVisible: true },
+    const rateSetting = await safePrismaQuery(
+      (db) => db.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),
+      null,
+      1200
+    );
+    const ratePerGB = rateSetting ? parseFloat((rateSetting as any).value) || 1.0 : 1.0;
+
+    let game: any = await safePrismaQuery(
+      (db) =>
+        db.game.findUnique({
+          where: { id: params.id },
           include: {
-            user: {
-              select: { id: true, name: true, avatar: true },
+            reviews: {
+              where: { isVisible: true },
+              include: {
+                user: {
+                  select: { id: true, name: true, avatar: true },
+                },
+              },
+              orderBy: { createdAt: 'desc' },
             },
           },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
+        }),
+      null,
+      1500
+    );
 
     if (!game) {
+      const fallback = FALLBACK_GAMES.find(
+        (g) =>
+          g.id === params.id ||
+          g.name.toLowerCase() === decodeURIComponent(params.id).toLowerCase()
+      );
+      if (fallback) {
+        const similarGames = FALLBACK_GAMES
+          .filter((g) => g.id !== fallback.id)
+          .map((g) => {
+            const overlap = g.genre.filter((x) => fallback.genre.includes(x)).length;
+            return {
+              ...g,
+              overlap,
+            };
+          })
+          .sort(
+            (a, b) =>
+              b.overlap - a.overlap ||
+              (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0)
+          )
+          .slice(0, 4);
+
+        return NextResponse.json({
+          game: {
+            ...fallback,
+            price: calculatePrice(fallback.sizeGB, ratePerGB),
+          },
+          similarGames,
+          ratePerGB,
+        });
+      }
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
-
-    const rateSetting = await prisma.siteSetting.findUnique({
-      where: { key: 'ratePerGB' },
-    });
-    const ratePerGB = rateSetting ? parseFloat(rateSetting.value) || 1.0 : 1.0;
 
     const genresArray: string[] = Array.isArray(game.genre)
       ? (game.genre as string[])
@@ -40,19 +80,31 @@ export async function GET(
       : [];
 
     // Find Similar Games sharing primary genre
-    const allActive = await prisma.game.findMany({
-      where: {
-        status: 'ACTIVE',
-        id: { not: game.id },
-      },
-    });
+    const allActive = await safePrismaQuery(
+      (db) =>
+        db.game.findMany({
+          where: {
+            status: 'ACTIVE',
+            id: { not: game.id },
+          },
+        }),
+      [],
+      1200
+    );
 
-    const similarGames = allActive
-      .map((g) => {
+    const similarSource =
+      allActive && allActive.length > 0
+        ? allActive
+        : FALLBACK_GAMES.filter((g) => g.id !== game.id);
+
+    const similarGames = similarSource
+      .map((g: any) => {
         const gGenres: string[] = Array.isArray(g.genre)
           ? (g.genre as string[])
+          : typeof g.genre === 'string'
+          ? JSON.parse(g.genre)
           : [];
-        const overlap = gGenres.filter((x) => genresArray.includes(x)).length;
+        const overlap = gGenres.filter((x: string) => genresArray.includes(x)).length;
         return {
           ...g,
           genre: gGenres,
@@ -60,13 +112,16 @@ export async function GET(
           overlap,
         };
       })
-      .sort((a, b) => b.overlap - a.overlap || (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
+      .sort(
+        (a: any, b: any) =>
+          b.overlap - a.overlap || (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0)
+      )
       .slice(0, 4);
 
-    const ratings = game.reviews.map((r) => r.rating);
+    const ratings = (game.reviews || []).map((r: any) => r.rating);
     const avgRating =
       ratings.length > 0
-        ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+        ? Number((ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(1))
         : 4.8;
 
     return NextResponse.json({
@@ -82,6 +137,14 @@ export async function GET(
     });
   } catch (error) {
     console.error('GET /api/games/[id] error:', error);
+    const fallback = FALLBACK_GAMES.find((g) => g.id === params.id);
+    if (fallback) {
+      return NextResponse.json({
+        game: fallback,
+        similarGames: FALLBACK_GAMES.slice(0, 4),
+        ratePerGB: 1.0,
+      });
+    }
     return NextResponse.json({ error: 'Failed to fetch game details' }, { status: 500 });
   }
 }

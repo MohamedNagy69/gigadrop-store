@@ -13,7 +13,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { Plus, Edit, Trash2, Download, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Search, RefreshCw } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
 import { useThemeStore } from '@/stores/themeStore';
 import { genreTranslations } from '@/lib/i18n';
@@ -24,6 +24,8 @@ export default function AdminGamesPage() {
 
   const [games, setGames] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
 
   const loadGames = async () => {
     const res = await fetch('/api/games?all=true');
@@ -34,6 +36,30 @@ export default function AdminGamesPage() {
   useEffect(() => {
     loadGames();
   }, []);
+
+  const handleSyncCatalog = async () => {
+    setIsSyncing(true);
+    setSyncMessage('');
+    try {
+      const res = await fetch('/api/admin/seed', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setSyncMessage(
+          isAr
+            ? `✓ تم مزامنة ${data.count || 52} لعبة بنجاح مع قاعدة البيانات!`
+            : `✓ Successfully synced ${data.count || 52} games to database!`
+        );
+        await loadGames();
+      } else {
+        setSyncMessage(data.error || 'Failed to sync');
+      }
+    } catch (err: any) {
+      setSyncMessage(err.message || 'Error syncing');
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncMessage(''), 5000);
+    }
+  };
 
   const handleDelete = async (id: string, name: string) => {
     if (
@@ -99,6 +125,28 @@ export default function AdminGamesPage() {
         <div className="flex items-center gap-3">
           <button
             type="button"
+            onClick={handleSyncCatalog}
+            disabled={isSyncing}
+            className="inline-flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-xs font-bold text-[var(--text-primary)] hover:border-[#CCFF00] disabled:opacity-50"
+            title={
+              isAr
+                ? 'مزامنة كتالوج الـ 52 لعبة إلى قاعدة البيانات'
+                : 'Sync all 52 games into the database'
+            }
+          >
+            <RefreshCw
+              className={`h-4 w-4 text-[#CCFF00] ${isSyncing ? 'animate-spin' : ''}`}
+            />
+            {isSyncing
+              ? isAr
+                ? 'جارِ المزامنة...'
+                : 'Syncing...'
+              : isAr
+              ? 'مزامنة الكتالوج (52)'
+              : 'Sync Catalog (52)'}
+          </button>
+          <button
+            type="button"
             onClick={handleExportCSV}
             className="inline-flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-xs font-bold text-[var(--text-primary)] hover:border-[#CCFF00]"
           >
@@ -114,6 +162,12 @@ export default function AdminGamesPage() {
           </Link>
         </div>
       </div>
+
+      {syncMessage && (
+        <div className="rounded-[8px] border border-[#CCFF00]/40 bg-[#CCFF00]/10 p-3 text-xs font-bold text-[#CCFF00]">
+          {syncMessage}
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="relative max-w-md">

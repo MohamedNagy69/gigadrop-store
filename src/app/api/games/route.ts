@@ -49,50 +49,55 @@ export async function GET(req: Request) {
       1500
     );
 
-    if (games.length === 0 && !search && (!genre || genre.toLowerCase() === 'all') && !includeAllStatuses) {
-      return NextResponse.json({
-        games: FALLBACK_GAMES,
-        total: FALLBACK_GAMES.length,
-        ratePerGB,
+    let formatted: any[] = [];
+
+    if (games.length === 0) {
+      formatted = FALLBACK_GAMES.map((g) => ({
+        ...g,
+        price: calculatePrice(g.sizeGB, ratePerGB),
+      }));
+
+      if (!includeAllStatuses) {
+        formatted = formatted.filter((g) => g.status === status);
+      }
+    } else {
+      formatted = games.map((g) => {
+        const genresArray: string[] = Array.isArray(g.genre)
+          ? (g.genre as string[])
+          : typeof g.genre === 'string'
+          ? JSON.parse(g.genre)
+          : [];
+
+        const ratings = g.reviews.map((r) => r.rating);
+        const avgRating =
+          ratings.length > 0
+            ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+            : 4.8;
+
+        return {
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          genre: genresArray,
+          coverImage: g.coverImage,
+          trailerUrl: g.trailerUrl,
+          sizeGB: g.sizeGB,
+          price: calculatePrice(g.sizeGB, ratePerGB),
+          releaseYear: g.releaseYear,
+          status: g.status,
+          isFeatured: g.isFeatured,
+          isOP: g.isOP,
+          avgRating,
+          reviewsCount: ratings.length,
+          createdAt: g.createdAt,
+        };
       });
     }
-
-    let formatted = games.map((g) => {
-      const genresArray: string[] = Array.isArray(g.genre)
-        ? (g.genre as string[])
-        : typeof g.genre === 'string'
-        ? JSON.parse(g.genre)
-        : [];
-
-      const ratings = g.reviews.map((r) => r.rating);
-      const avgRating =
-        ratings.length > 0
-          ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
-          : 4.8;
-
-      return {
-        id: g.id,
-        name: g.name,
-        description: g.description,
-        genre: genresArray,
-        coverImage: g.coverImage,
-        trailerUrl: g.trailerUrl,
-        sizeGB: g.sizeGB,
-        price: calculatePrice(g.sizeGB, ratePerGB),
-        releaseYear: g.releaseYear,
-        status: g.status,
-        isFeatured: g.isFeatured,
-        isOP: g.isOP,
-        avgRating,
-        reviewsCount: ratings.length,
-        createdAt: g.createdAt,
-      };
-    });
 
     // Genre filter
     if (genre && genre.toLowerCase() !== 'all') {
       formatted = formatted.filter((g) =>
-        g.genre.some((item) => item.toLowerCase() === genre.toLowerCase())
+        g.genre.some((item: string) => item.toLowerCase() === genre.toLowerCase())
       );
     }
 
@@ -103,7 +108,7 @@ export async function GET(req: Request) {
         (g) =>
           g.name.toLowerCase().includes(q) ||
           (g.description && g.description.toLowerCase().includes(q)) ||
-          g.genre.some((gen) => gen.toLowerCase().includes(q))
+          g.genre.some((gen: string) => gen.toLowerCase().includes(q))
       );
     }
 
