@@ -13,16 +13,6 @@ export default function HeroScene() {
     const container = mountRef.current;
     if (!container) return;
 
-    const isLowPowerMobile =
-      typeof window !== 'undefined' &&
-      window.innerWidth < 640 &&
-      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    if (isLowPowerMobile) {
-      setWebglSupported(false);
-      return;
-    }
-
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
@@ -35,8 +25,8 @@ export default function HeroScene() {
       return;
     }
 
-    const width = container.clientWidth || 1200;
-    const height = container.clientHeight || 650;
+    const width = container.clientWidth || 520;
+    const height = container.clientHeight || 520;
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.innerHTML = '';
@@ -44,58 +34,70 @@ export default function HeroScene() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 7.0);
+    camera.position.set(0, 0, 6.4);
 
     const isLight = theme === 'light';
     const primaryHex = isLight ? 0x166534 : 0xccff00;
     const coreHex = isLight ? 0x15803d : 0x84cc16;
+    const secondaryHex = isLight ? 0x0284c7 : 0x38bdf8;
 
-    // Centered 3D Cyber Core Group
-    const sphereGroup = new THREE.Group();
-    sphereGroup.position.set(0, 0, 0);
-    scene.add(sphereGroup);
+    // Main 3D Group
+    const group = new THREE.Group();
+    scene.add(group);
 
-    // 1. Outer Geodesic Wireframe Sphere (Icosahedron detail 2 gives the exact triangular lattice from the photo)
-    const outerGeo = new THREE.IcosahedronGeometry(2.35, 2);
+    // 1. Outer Geodesic Wireframe Sphere (Icosahedron detail 2)
+    const outerGeo = new THREE.IcosahedronGeometry(2.0, 2);
     const outerMat = new THREE.MeshBasicMaterial({
       color: primaryHex,
       wireframe: true,
       transparent: true,
-      opacity: isLight ? 0.14 : 0.28,
+      opacity: isLight ? 0.24 : 0.45,
     });
     const outerSphere = new THREE.Mesh(outerGeo, outerMat);
-    sphereGroup.add(outerSphere);
+    group.add(outerSphere);
 
-    // 2. Inner Rotating Core (Octahedron with bright wireframe)
-    const coreGeo = new THREE.OctahedronGeometry(1.2, 1);
+    // 2. Inner Rotating Octahedron Core
+    const coreGeo = new THREE.OctahedronGeometry(1.05, 1);
     const coreMat = new THREE.MeshBasicMaterial({
       color: coreHex,
       wireframe: true,
       transparent: true,
-      opacity: isLight ? 0.22 : 0.45,
+      opacity: isLight ? 0.35 : 0.68,
     });
     const innerCore = new THREE.Mesh(coreGeo, coreMat);
-    sphereGroup.add(innerCore);
+    group.add(innerCore);
 
-    // 3. Subtle Inner Equator Ring
-    const ringGeo = new THREE.RingGeometry(1.48, 1.52, 48);
+    // 3. Middle Tilted Gyro Data Ring
+    const ringGeo = new THREE.TorusGeometry(2.28, 0.016, 8, 64);
     const ringMat = new THREE.MeshBasicMaterial({
       color: primaryHex,
       transparent: true,
-      opacity: isLight ? 0.12 : 0.24,
-      side: THREE.DoubleSide,
+      opacity: isLight ? 0.25 : 0.52,
     });
     const gyroRing = new THREE.Mesh(ringGeo, ringMat);
-    gyroRing.rotation.x = Math.PI / 2.3;
-    sphereGroup.add(gyroRing);
+    gyroRing.rotation.x = Math.PI / 2.8;
+    gyroRing.rotation.y = Math.PI / 6;
+    group.add(gyroRing);
 
-    // 4. Ambient Floating Cyber Particles
-    const particleCount = 110;
+    // 4. Secondary Counter-Tilted Ring
+    const ring2Geo = new THREE.TorusGeometry(2.4, 0.012, 8, 64);
+    const ring2Mat = new THREE.MeshBasicMaterial({
+      color: secondaryHex,
+      transparent: true,
+      opacity: isLight ? 0.18 : 0.38,
+    });
+    const gyroRing2 = new THREE.Mesh(ring2Geo, ring2Mat);
+    gyroRing2.rotation.x = -Math.PI / 3.2;
+    gyroRing2.rotation.z = Math.PI / 4;
+    group.add(gyroRing2);
+
+    // 5. Ambient Floating Cyber Particles
+    const particleCount = 100;
     const particlePositions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount * 3; i += 3) {
-      particlePositions[i] = (Math.random() - 0.5) * 12;
+      particlePositions[i] = (Math.random() - 0.5) * 8.5;
       particlePositions[i + 1] = (Math.random() - 0.5) * 8.5;
-      particlePositions[i + 2] = (Math.random() - 0.5) * 7;
+      particlePositions[i + 2] = (Math.random() - 0.5) * 6.5;
     }
     const particleGeo = new THREE.BufferGeometry();
     particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
@@ -103,12 +105,12 @@ export default function HeroScene() {
       color: primaryHex,
       size: 0.045,
       transparent: true,
-      opacity: isLight ? 0.35 : 0.65,
+      opacity: isLight ? 0.45 : 0.78,
     });
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
-    // Mouse Parallax Effect
+    // Mouse Parallax
     let mouseX = 0;
     let mouseY = 0;
     let targetX = 0;
@@ -125,24 +127,25 @@ export default function HeroScene() {
     const animate = () => {
       frameId = requestAnimationFrame(animate);
 
-      // Smooth camera interpolation towards cursor
-      targetX = mouseX * 0.45;
-      targetY = -mouseY * 0.35;
+      // Camera tilt towards mouse
+      targetX = mouseX * 0.4;
+      targetY = -mouseY * 0.3;
       camera.position.x += (targetX - camera.position.x) * 0.04;
       camera.position.y += (targetY - camera.position.y) * 0.04;
       camera.lookAt(0, 0, 0);
 
-      // Self-rotations
-      outerSphere.rotation.y += 0.0022;
-      outerSphere.rotation.x += 0.001;
+      // Continuous Rotations
+      outerSphere.rotation.y += 0.0028;
+      outerSphere.rotation.x += 0.0014;
 
-      innerCore.rotation.y -= 0.0035;
-      innerCore.rotation.z += 0.0018;
+      innerCore.rotation.y -= 0.0045;
+      innerCore.rotation.z += 0.0022;
 
-      gyroRing.rotation.z += 0.0015;
+      gyroRing.rotation.z += 0.002;
+      gyroRing2.rotation.z -= 0.0016;
 
-      particles.rotation.y += 0.0006;
-      particles.rotation.x -= 0.0003;
+      particles.rotation.y += 0.0008;
+      particles.rotation.x -= 0.0004;
 
       renderer.render(scene, camera);
     };
@@ -150,8 +153,8 @@ export default function HeroScene() {
 
     const handleResize = () => {
       if (!container) return;
-      const w = container.clientWidth || 1200;
-      const h = container.clientHeight || 650;
+      const w = container.clientWidth || 520;
+      const h = container.clientHeight || 520;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -168,6 +171,8 @@ export default function HeroScene() {
       coreMat.dispose();
       ringGeo.dispose();
       ringMat.dispose();
+      ring2Geo.dispose();
+      ring2Mat.dispose();
       particleGeo.dispose();
       particleMat.dispose();
       renderer.dispose();
@@ -181,7 +186,7 @@ export default function HeroScene() {
   return (
     <div
       ref={mountRef}
-      className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black_50%,transparent_92%)]"
+      className="relative h-full w-full flex items-center justify-center select-none"
       aria-hidden="true"
     />
   );

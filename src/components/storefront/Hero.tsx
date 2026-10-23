@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 import { ShieldCheck, Gamepad2, ArrowRight, ArrowLeft, Flame, HardDrive } from 'lucide-react';
 import { useThemeStore } from '@/stores/themeStore';
 import { translations } from '@/lib/i18n';
-import PriceCalculator from '@/components/storefront/PriceCalculator';
 
 const HeroScene = dynamic(() => import('@/components/three/HeroScene'), {
   ssr: false,
@@ -67,9 +66,9 @@ export default function Hero() {
           '-=0.4'
         )
         .fromTo(
-          '.hero-calc-card',
-          { opacity: 0, y: 28, scale: 0.96 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'power3.out' },
+          '.hero-3d-visual',
+          { opacity: 0, scale: 0.85, y: 24 },
+          { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: 'power3.out' },
           '-=0.6'
         );
 
@@ -109,29 +108,26 @@ export default function Hero() {
         isAr ? 'font-cairo' : 'font-sans'
       }`}
     >
-      {/* 3D Scientific Wireframe Sphere Scene in Background */}
-      <HeroScene />
-
-      {/* Dynamic 3D Ambient Glowing Horizon Aura */}
+      {/* Dynamic Ambient Background Aura & Tactical Cyber Grid */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       >
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[520px] w-[700px] rounded-full blur-[150px] opacity-70 pointer-events-none"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[520px] w-[700px] rounded-full blur-[160px] opacity-60 pointer-events-none"
           style={{
             background: isDark
-              ? 'radial-gradient(circle, rgba(204,255,0,0.14) 0%, rgba(204,255,0,0.02) 55%, transparent 75%)'
-              : 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(2,132,199,0.04) 55%, transparent 75%)',
+              ? 'radial-gradient(circle, rgba(204,255,0,0.12) 0%, rgba(204,255,0,0.02) 55%, transparent 75%)'
+              : 'radial-gradient(circle, rgba(16,185,129,0.14) 0%, rgba(2,132,199,0.04) 55%, transparent 75%)',
           }}
         />
 
-        {/* Tactical Cyber Grid Background Overlay */}
+        {/* Tactical Cyber Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] light:bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:52px_52px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_88%)]" />
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-[1280px] px-6 sm:px-8">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8">
           
           {/* Main Content Column (Left in LTR English, Right in RTL Arabic) */}
           <div
@@ -196,9 +192,20 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right Column: Price Calculator Card */}
-          <div className="hero-calc-card lg:col-span-5 flex items-center justify-center w-full">
-            <PriceCalculator />
+          {/* Right Column: 3D Scientific Moving Object (Wireframe Geodesic Sphere + Core + Parallax) */}
+          <div className="hero-3d-visual lg:col-span-5 flex items-center justify-center relative w-full">
+            <div className="relative w-full max-w-[480px] sm:max-w-[540px] aspect-square flex items-center justify-center">
+              {/* Volumetric Radial Glow behind 3D Object */}
+              <div
+                className="pointer-events-none absolute inset-4 rounded-full blur-[90px] opacity-60"
+                style={{
+                  background: isDark
+                    ? 'radial-gradient(circle, rgba(204,255,0,0.18) 0%, rgba(204,255,0,0.03) 60%, transparent 80%)'
+                    : 'radial-gradient(circle, rgba(22,101,52,0.16) 0%, rgba(2,132,199,0.04) 60%, transparent 80%)',
+                }}
+              />
+              <HeroScene />
+            </div>
           </div>
 
         </div>
