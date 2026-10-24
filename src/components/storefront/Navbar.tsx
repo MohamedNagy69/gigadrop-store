@@ -149,7 +149,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+        className={`site-navbar fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
           scrolled
             ? 'border-b border-[var(--border)] bg-[var(--bg-primary)]/90 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.4)]'
             : 'border-b border-white/[0.06] bg-[var(--bg-primary)]/60 backdrop-blur-md'
@@ -164,12 +164,12 @@ export default function Navbar() {
               dir="ltr"
               className="group flex shrink-0 items-center gap-2.5"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#CCFF00] text-base font-black text-black shadow-[0_0_20px_rgba(204,255,0,0.35)] transition-transform duration-200 group-hover:scale-105">
+              <span className="nav-logo-badge flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#CCFF00] text-base font-black text-black shadow-[0_0_20px_rgba(204,255,0,0.35)] transition-transform duration-200 group-hover:scale-105">
                 G
               </span>
               <span className="text-xl font-black tracking-tight">
                 <span className="text-[var(--text-primary)]">GIGA</span>
-                <span className="text-[#CCFF00]">DROP</span>
+                <span className="nav-logo-drop text-[#CCFF00]">DROP</span>
               </span>
             </Link>
 
@@ -186,15 +186,15 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`relative py-1 text-sm font-semibold transition-colors whitespace-nowrap ${
+                    className={`nav-link-item relative py-1 text-sm font-semibold transition-colors whitespace-nowrap ${
                       isActive
-                        ? 'text-[#CCFF00]'
+                        ? 'active-nav text-[#CCFF00]'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                   >
                     {link.label}
                     {isActive && (
-                      <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-[#CCFF00]" />
+                      <span className="active-nav-indicator absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-[#CCFF00]" />
                     )}
                   </Link>
                 );
@@ -214,7 +214,7 @@ export default function Navbar() {
               <Link
                 href={isAuthenticated ? '/dashboard/wishlist' : '/login'}
                 title={t.wishlist}
-                className="relative hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] transition-colors hover:border-[#CCFF00] hover:text-[#CCFF00]"
+                className="nav-icon-btn relative hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] transition-colors hover:border-[#CCFF00] hover:text-[#CCFF00]"
               >
                 <Heart className="h-4 w-4" />
                 {wishlistIds.length > 0 && (
@@ -240,7 +240,7 @@ export default function Navbar() {
                 <Link
                   href="/dashboard"
                   title={t.dashboard}
-                  className="hidden sm:inline-flex h-10 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3.5 text-xs font-bold text-[var(--text-primary)] transition-all hover:border-[#CCFF00] hover:text-[#CCFF00] whitespace-nowrap"
+                  className="nav-icon-btn hidden sm:inline-flex h-10 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3.5 text-xs font-bold text-[var(--text-primary)] transition-all hover:border-[#CCFF00] hover:text-[#CCFF00] whitespace-nowrap"
                 >
                   <User className="h-4 w-4 shrink-0 text-[#CCFF00]" />
                   <span>{user?.name ? user.name.split(' ')[0] : t.dashboard}</span>
@@ -250,7 +250,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 title={t.login}
-                className="hidden sm:inline-flex h-10 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3.5 text-xs font-bold text-[var(--text-primary)] transition-all hover:border-[#CCFF00] hover:text-[#CCFF00] whitespace-nowrap"
+                className="nav-icon-btn hidden sm:inline-flex h-10 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3.5 text-xs font-bold text-[var(--text-primary)] transition-all hover:border-[#CCFF00] hover:text-[#CCFF00] whitespace-nowrap"
               >
                 <LogIn className="h-4 w-4 shrink-0 text-[#CCFF00]" />
                 <span>{t.login}</span>
@@ -266,7 +266,7 @@ export default function Navbar() {
                   window.location.href = '/login';
                 }}
                 title={t.signOut}
-                className="hidden lg:inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#FF4444]/40 bg-[#FF4444]/10 text-[#FF4444] transition-colors hover:bg-[#FF4444] hover:text-white"
+                className="nav-icon-btn hidden lg:inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#FF4444]/40 bg-[#FF4444]/10 text-[#FF4444] transition-colors hover:bg-[#FF4444] hover:text-white"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -277,7 +277,7 @@ export default function Navbar() {
               type="button"
               onClick={() => setCartOpen(true)}
               aria-label="Open Cart"
-              className="group flex h-10 items-center gap-2 rounded-full border border-[#CCFF00] bg-[#CCFF00]/10 px-3.5 sm:px-4 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[#CCFF00] hover:text-black whitespace-nowrap shadow-sm"
+              className="nav-icon-btn group flex h-10 items-center gap-2 rounded-full border border-[#CCFF00] bg-[#CCFF00]/10 px-3.5 sm:px-4 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[#CCFF00] hover:text-black whitespace-nowrap shadow-sm"
             >
               <ShoppingBag className="h-4 w-4 shrink-0 text-[#CCFF00] group-hover:text-black" />
               <span className="hidden md:inline">{t.cart}</span>
@@ -291,7 +291,7 @@ export default function Navbar() {
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
-              className="flex lg:hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors"
+              className="nav-icon-btn flex lg:hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors"
             >
               <Menu className="h-5 w-5" />
             </button>

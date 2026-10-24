@@ -104,10 +104,16 @@ export default function Hero() {
   return (
     <section
       ref={heroRef}
+      id="hero-section"
       dir={isAr ? 'rtl' : 'ltr'}
-      className={`relative min-h-[100dvh] lg:h-screen lg:max-h-screen w-full overflow-hidden border-b border-[var(--border)] pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-20 lg:pb-4 flex items-center justify-center ${
+      className={`hero-dark-section relative min-h-[100dvh] lg:h-screen lg:max-h-screen w-full overflow-hidden border-b border-[var(--border)] pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-20 lg:pb-4 flex items-center justify-center ${
         isAr ? 'font-cairo' : 'font-sans'
       }`}
+      style={{
+        background: isDark
+          ? '#000000'
+          : 'linear-gradient(135deg, #1B2A1D 0%, #2D4A30 100%)',
+      }}
     >
       {/* Full-Screen Interactive Cyber Starfield across Hero */}
       <HeroStarfield />
@@ -120,14 +126,13 @@ export default function Hero() {
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[520px] w-[700px] rounded-full blur-[160px] opacity-60 pointer-events-none"
           style={{
-            background: isDark
-              ? 'radial-gradient(circle, rgba(204,255,0,0.12) 0%, rgba(204,255,0,0.02) 55%, transparent 75%)'
-              : 'radial-gradient(circle, rgba(16,185,129,0.14) 0%, rgba(2,132,199,0.04) 55%, transparent 75%)',
+            background:
+              'radial-gradient(circle, rgba(191,255,0,0.14) 0%, rgba(191,255,0,0.02) 55%, transparent 75%)',
           }}
         />
 
         {/* Tactical Cyber Grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] light:bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:52px_52px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_88%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:52px_52px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_88%)]" />
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
@@ -140,26 +145,26 @@ export default function Hero() {
             }`}
           >
             {/* Top Status Tag */}
-            <div className="hero-pill-tag mb-3 inline-flex items-center gap-2 rounded-full border border-[#CCFF00]/30 dark:border-[#CCFF00]/30 light:border-emerald-600/30 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-500/10 px-3.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 shadow-[0_0_16px_rgba(204,255,0,0.15)] light:shadow-[0_2px_10px_rgba(5,150,105,0.1)]">
+            <div className="hero-pill-tag mb-3 inline-flex items-center gap-2 rounded-full border border-[#BFFF00]/30 bg-[#BFFF00]/10 px-3.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#BFFF00] shadow-[0_0_16px_rgba(191,255,0,0.2)]">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-500 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-600" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#BFFF00] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#BFFF00]" />
               </span>
               <span>{t.availableAcrossCairo}</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[50px] xl:text-[58px] font-black tracking-tight leading-[1.12] sm:leading-[1.08]">
-              <span className="hero-title-line-1 block text-white dark:text-white light:text-slate-950">
+              <span className="hero-title-line-1 block text-white">
                 {t.heroTitleLine1}
               </span>
-              <span className="hero-title-line-2 block text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 drop-shadow-[0_0_28px_rgba(204,255,0,0.25)] light:drop-shadow-[0_0_20px_rgba(5,150,105,0.2)]">
+              <span className="hero-title-line-2 block text-[#BFFF00] drop-shadow-[0_0_28px_rgba(191,255,0,0.35)]">
                 {t.heroTitleLine2}
               </span>
             </h1>
 
             {/* Subtitle Paragraph */}
-            <p className="hero-subtitle-text mt-3 sm:mt-4 max-w-lg text-xs sm:text-sm md:text-base leading-[1.65] text-zinc-400 dark:text-zinc-400 light:text-slate-600 font-normal">
+            <p className="hero-subtitle-text mt-3 sm:mt-4 max-w-lg text-xs sm:text-sm md:text-base leading-[1.65] text-white/60 font-normal">
               {t.heroSubtitle}
             </p>
 
@@ -167,14 +172,14 @@ export default function Hero() {
             <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-2 sm:gap-3">
               
               {/* Hard Drive Options Badge */}
-              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300/80 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40 light:hover:border-emerald-600/40">
-                <HardDrive className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-600 shrink-0" />
+              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white backdrop-blur-md shadow-sm transition-all hover:border-[#BFFF00]/40">
+                <HardDrive className="h-3.5 w-3.5 text-[#BFFF00] shrink-0" />
                 <span>{isAr ? 'شراء هارد جديد أو التحميل على هاردك' : 'Buy New Hard Drive or Load on Yours'}</span>
               </div>
 
               {/* Cash on Delivery Badge */}
-              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300/80 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40 light:hover:border-emerald-600/40">
-                <ShieldCheck className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-600 shrink-0" />
+              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white backdrop-blur-md shadow-sm transition-all hover:border-[#BFFF00]/40">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#BFFF00] shrink-0" />
                 <span>{t.badgeCashOnDelivery}</span>
               </div>
 
@@ -182,7 +187,7 @@ export default function Hero() {
               <a
                 ref={magneticBtnRef}
                 href="#library"
-                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-gradient-to-r light:from-emerald-600 light:to-emerald-700 px-4 sm:px-5 text-xs sm:text-sm font-black text-black light:text-white shadow-[0_0_24px_rgba(204,255,0,0.4)] light:shadow-[0_4px_16px_rgba(5,150,105,0.35)] transition-all hover:scale-105 hover:bg-[#B8E600] light:hover:from-emerald-500 light:hover:to-emerald-600"
+                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full bg-[#BFFF00] px-4 sm:px-5 text-xs sm:text-sm font-black text-black shadow-[0_0_24px_rgba(191,255,0,0.4)] transition-all hover:scale-105 hover:bg-[#A6E600]"
               >
                 <Gamepad2 className="h-4 w-4 transition-transform group-hover:rotate-12" />
                 <span>{t.browseLibraryBtn}</span>
@@ -196,7 +201,7 @@ export default function Hero() {
               {/* Hard Drive Store CTA Button */}
               <a
                 href="#hard-drives"
-                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full border border-[#CCFF00]/40 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:border-emerald-600/40 light:bg-emerald-500/10 px-3.5 sm:px-4 text-xs sm:text-sm font-black text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 hover:bg-[#CCFF00] hover:text-black dark:hover:bg-[#CCFF00] dark:hover:text-black light:hover:bg-emerald-600 light:hover:text-white transition-all hover:scale-105"
+                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full border border-[#BFFF00]/40 bg-[#BFFF00]/10 px-3.5 sm:px-4 text-xs sm:text-sm font-black text-[#BFFF00] hover:bg-[#BFFF00] hover:text-black transition-all hover:scale-105"
               >
                 <HardDrive className="h-3.5 w-3.5" />
                 <span>{isAr ? 'متجر الهاردات' : 'Hard Drives Store'}</span>
@@ -212,9 +217,8 @@ export default function Hero() {
               <div
                 className="pointer-events-none absolute inset-4 rounded-full blur-[90px] opacity-60"
                 style={{
-                  background: isDark
-                    ? 'radial-gradient(circle, rgba(204,255,0,0.18) 0%, rgba(204,255,0,0.03) 60%, transparent 80%)'
-                    : 'radial-gradient(circle, rgba(5,150,105,0.2) 0%, rgba(2,132,199,0.05) 60%, transparent 80%)',
+                  background:
+                    'radial-gradient(circle, rgba(191,255,0,0.18) 0%, rgba(191,255,0,0.03) 60%, transparent 80%)',
                 }}
               />
               <HeroScene />

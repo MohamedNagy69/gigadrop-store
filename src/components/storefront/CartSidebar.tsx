@@ -142,7 +142,7 @@ export default function CartSidebar() {
               </div>
 
               {totalGB >= 250 && (
-                <div className="flex items-center justify-between text-xs text-[#CCFF00]">
+                <div className="badge-discount-text flex items-center justify-between text-xs text-[#CCFF00]">
                   <span>{t.bulkDriveDiscount}</span>
                   <span>{t.autoApplied}</span>
                 </div>

@@ -36,10 +36,10 @@ export default function HeroScene() {
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
     camera.position.set(0, 0, 6.4);
 
-    const isLight = theme === 'light';
-    const primaryHex = isLight ? 0x059669 : 0xccff00;
-    const coreHex = isLight ? 0x0f766e : 0x84cc16;
-    const secondaryHex = isLight ? 0x0284c7 : 0x38bdf8;
+    // Hero is permanently dark in both dark & light mode with neon lime & cyan
+    const primaryHex = 0xbfff00;
+    const coreHex = 0x84cc16;
+    const secondaryHex = 0x38bdf8;
 
     // Main 3D Group
     const group = new THREE.Group();
@@ -51,7 +51,7 @@ export default function HeroScene() {
       color: primaryHex,
       wireframe: true,
       transparent: true,
-      opacity: isLight ? 0.55 : 0.45,
+      opacity: 0.48,
     });
     const outerSphere = new THREE.Mesh(outerGeo, outerMat);
     group.add(outerSphere);
@@ -62,7 +62,7 @@ export default function HeroScene() {
       color: coreHex,
       wireframe: true,
       transparent: true,
-      opacity: isLight ? 0.70 : 0.68,
+      opacity: 0.70,
     });
     const innerCore = new THREE.Mesh(coreGeo, coreMat);
     group.add(innerCore);
@@ -72,7 +72,7 @@ export default function HeroScene() {
     const ringMat = new THREE.MeshBasicMaterial({
       color: primaryHex,
       transparent: true,
-      opacity: isLight ? 0.50 : 0.52,
+      opacity: 0.52,
     });
     const gyroRing = new THREE.Mesh(ringGeo, ringMat);
     gyroRing.rotation.x = Math.PI / 2.8;
@@ -84,7 +84,7 @@ export default function HeroScene() {
     const ring2Mat = new THREE.MeshBasicMaterial({
       color: secondaryHex,
       transparent: true,
-      opacity: isLight ? 0.42 : 0.38,
+      opacity: 0.40,
     });
     const gyroRing2 = new THREE.Mesh(ring2Geo, ring2Mat);
     gyroRing2.rotation.x = -Math.PI / 3.2;
@@ -103,9 +103,9 @@ export default function HeroScene() {
     particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
     const particleMat = new THREE.PointsMaterial({
       color: primaryHex,
-      size: isLight ? 0.055 : 0.045,
+      size: 0.048,
       transparent: true,
-      opacity: isLight ? 0.75 : 0.78,
+      opacity: 0.78,
     });
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);

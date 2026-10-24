@@ -535,7 +535,7 @@ export default function CheckoutModal() {
           </div>
 
           {discountLabel && (
-            <div className="flex items-center gap-2 rounded-[8px] border border-[#CCFF00]/40 bg-[#CCFF00]/10 px-3.5 py-2 text-xs font-semibold text-[#CCFF00]">
+            <div className="badge-discount flex items-center gap-2 rounded-[8px] border border-[#CCFF00]/40 bg-[#CCFF00]/10 px-3.5 py-2 text-xs font-semibold text-[#CCFF00]">
               <Tag className="h-3.5 w-3.5" />
               <span>{discountLabel}</span>
             </div>

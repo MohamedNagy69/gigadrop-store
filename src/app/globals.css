@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   GIGADROP STORE — THEME TOKENS
+   ========================================================================== */
 :root,
 .dark {
   --bg-primary: #000000;
@@ -25,119 +28,408 @@
 }
 
 /* ==========================================================================
-   GAMING LIGHT MODE — "Titanium Cyber-Frost & Hyper-Emerald"
-   (Luminous Arctic Canvas, Pure Tactile Cards, Hyper-Emerald Accents)
+   GAMING LIGHT MODE — REFINED PALETTE
+   Cool Off-White (#F2F3F5), Tactile Containers (#FFFFFF), Deep Green (#2E7D32)
    ========================================================================== */
 .light {
-  --bg-primary: #F4F6F9;
-  --bg-secondary: #E8EDF5;
+  --bg-primary: #F2F3F5;
+  --bg-secondary: #EAECF0;
   --bg-card: #FFFFFF;
   --bg-card-hover: #FFFFFF;
   --bg-elevated: #FFFFFF;
-  --accent: #059669;
-  --accent-hover: #047857;
-  --text-primary: #020617;
-  --text-secondary: #334155;
-  --text-muted: #64748B;
-  --border: #E2E8F0;
-  --border-hover: #CBD5E1;
-  --success: #059669;
-  --error: #DC2626;
-  --badge-green: #059669;
-  --badge-text: #FFFFFF;
+  --accent: #2E7D32;
+  --accent-hover: #1B5E20;
+  --text-primary: #1A1A1A;
+  --text-secondary: #333333;
+  --text-muted: #666666;
+  --text-old-price: #999999;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-hover: rgba(0, 0, 0, 0.12);
+  --success: #2E7D32;
+  --error: #E53935;
+  --badge-green: #E8F5E9;
+  --badge-text: #2E7D32;
 }
 
-/* Tactical Cyber-Grid & Ambient Emerald Aurora in Light Mode */
+/* Page Background in Light Mode: cool off-white #F2F3F5 */
 html.light body {
-  background-color: #F4F6F9;
-  background-image:
-    radial-gradient(circle at 50% 0%, rgba(5, 150, 105, 0.08), transparent 60%),
-    radial-gradient(circle at 90% 30%, rgba(2, 132, 199, 0.04), transparent 50%),
-    linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
-  background-attachment: fixed;
+  background-color: #F2F3F5;
+  background-image: none;
 }
 
-/* Transform neon lime (#CCFF00) utilities into vibrant, high-contrast Hyper-Emerald in Light Mode */
-.light .text-\[\#CCFF00\] {
-  color: #047857 !important;
+/* ==========================================================================
+   LIGHT MODE TYPOGRAPHY & TEXT COLORS
+   ========================================================================== */
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6 {
+  color: #1A1A1A;
+}
+
+.light p {
+  color: #333333;
+}
+
+.light .text-\[var\(--text-primary\)\] {
+  color: #1A1A1A !important;
+}
+
+.light .text-\[var\(--text-secondary\)\] {
+  color: #333333 !important;
+}
+
+.light .text-\[var\(--text-muted\)\] {
+  color: #666666 !important;
+}
+
+.light .price-struck,
+.light del,
+.light s {
+  color: #999999 !important;
+}
+
+/* ==========================================================================
+   LIGHT MODE BRAND ACCENTS (Replacing neon lime outside hero & footer)
+   ========================================================================== */
+.light .text-\[\#CCFF00\],
+.light .text-\[\#BFFF00\] {
+  color: #2E7D32 !important;
 }
 
 .light .hover\:text-\[\#CCFF00\]:hover,
+.light .hover\:text-\[\#BFFF00\]:hover,
 .light .group:hover .group-hover\:text-\[\#CCFF00\] {
-  color: #065F46 !important;
+  color: #1B5E20 !important;
 }
 
 .light .fill-\[\#CCFF00\] {
-  fill: #047857 !important;
+  fill: #2E7D32 !important;
 }
 
-.light .bg-\[\#CCFF00\] {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+/* Primary buttons & CTAs: #2E7D32 (deep green) with white text */
+.light button.bg-\[\#CCFF00\],
+.light button.bg-\[\#BFFF00\],
+.light a.bg-\[\#CCFF00\],
+.light a.bg-\[\#BFFF00\],
+.light .btn-primary {
+  background-color: #2E7D32 !important;
   color: #FFFFFF !important;
-  box-shadow: 0 4px 14px -2px rgba(5, 150, 105, 0.35), 0 2px 4px rgba(5, 150, 105, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.25) !important;
 }
 
-.light .hover\:bg-\[\#CCFF00\]:hover,
-.light .hover\:bg-\[\#B8E600\]:hover,
+/* Button hover: #1B5E20 */
+.light button.bg-\[\#CCFF00\]:hover,
+.light button.hover\:bg-\[\#B8E600\]:hover,
+.light button.hover\:bg-\[\#CCFF00\]:hover,
+.light a.hover\:bg-\[\#B8E600\]:hover,
+.light a.hover\:bg-\[\#CCFF00\]:hover,
 .light .group:hover .group-hover\:bg-\[\#CCFF00\] {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+  background-color: #1B5E20 !important;
   color: #FFFFFF !important;
-  box-shadow: 0 8px 22px -2px rgba(5, 150, 105, 0.45), 0 3px 8px rgba(5, 150, 105, 0.25) !important;
 }
 
+/* Tags/badges backgrounds: #E8F5E9 with #2E7D32 text */
+.light span.bg-\[\#CCFF00\],
+.light span.bg-\[\#BFFF00\],
+.light .tag-badge,
+.light .badge,
+.light .badge-brand,
 .light .bg-\[\#CCFF00\]\/10,
 .light .bg-\[\#CCFF00\]\/15,
 .light .bg-\[\#CCFF00\]\/20,
-.light .bg-\[\#CCFF00\]\/\[0\.07\] {
-  background-color: rgba(5, 150, 105, 0.08) !important;
+.light .bg-\[\#CCFF00\]\/\[0\.07\],
+.light .bg-\[\#CCFF00\]\/\[0\.05\],
+.light .bg-\[\#BFFF00\]\/10,
+.light .bg-\[\#BFFF00\]\/15,
+.light .bg-\[\#BFFF00\]\/20 {
+  background-color: #E8F5E9 !important;
+  color: #2E7D32 !important;
 }
 
-.light .border-\[\#CCFF00\] {
-  border-color: #059669 !important;
+.light .border-\[\#CCFF00\],
+.light .border-\[\#BFFF00\] {
+  border-color: #2E7D32 !important;
 }
 
 .light .border-\[\#CCFF00\]\/30,
 .light .border-\[\#CCFF00\]\/40,
 .light .border-\[\#CCFF00\]\/50,
-.light .border-\[\#CCFF00\]\/60 {
-  border-color: rgba(5, 150, 105, 0.3) !important;
+.light .border-\[\#CCFF00\]\/60,
+.light .border-\[\#CCFF00\]\/70,
+.light .border-\[\#BFFF00\]\/30,
+.light .border-\[\#BFFF00\]\/40,
+.light .border-\[\#BFFF00\]\/50 {
+  border-color: rgba(46, 125, 50, 0.25) !important;
 }
 
-.light .hover\:border-\[\#CCFF00\]:hover {
-  border-color: #059669 !important;
-  box-shadow: 0 8px 24px -2px rgba(5, 150, 105, 0.15) !important;
+.light .hover\:border-\[\#CCFF00\]:hover,
+.light .hover\:border-\[\#BFFF00\]:hover {
+  border-color: #2E7D32 !important;
 }
 
 .light .accent-\[\#CCFF00\] {
-  accent-color: #059669 !important;
+  accent-color: #2E7D32 !important;
 }
 
-/* Tactile Pure White Card Elevation in Light Mode */
+/* ==========================================================================
+   CARDS & CONTAINERS IN LIGHT MODE
+   #FFFFFF with border: 1px solid rgba(0,0,0,0.06)
+   ========================================================================== */
 .light .bg-\[var\(--bg-card\)\] {
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03), inset 0 1px 0 rgba(255, 255, 255, 1);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.04) !important;
 }
 
 .light .bg-\[var\(--bg-card\)\]:hover {
-  box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(5, 150, 105, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: rgba(46, 125, 50, 0.3) !important;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08) !important;
 }
 
+.light .border-\[var\(--border\)\] {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.light .bg-\[var\(--bg-secondary\)\] {
+  background-color: #EAECF0 !important;
+}
+
+/* ==========================================================================
+   PLATFORM BADGES & DISCOUNT BADGES
+   ========================================================================== */
+.badge-platform-ps5,
+.badge-ps5,
+[data-platform="PS5"],
+[data-platform="ps5"] {
+  background-color: #1565C0 !important;
+  color: #FFFFFF !important;
+}
+
+.badge-platform-xbox,
+.badge-xbox,
+[data-platform="Xbox"],
+[data-platform="xbox"] {
+  background-color: #107C10 !important;
+  color: #FFFFFF !important;
+}
+
+.badge-platform-pc,
+.badge-pc,
+[data-platform="PC"],
+[data-platform="pc"] {
+  background-color: #333333 !important;
+  color: #FFFFFF !important;
+}
+
+/* Discount Badge: #E53935 (red) instead of green */
+.badge-discount,
+.light .badge-discount {
+  background-color: #E53935 !important;
+  color: #FFFFFF !important;
+  border-color: #E53935 !important;
+}
+
+.badge-discount *,
+.light .badge-discount * {
+  color: #FFFFFF !important;
+}
+
+.light .badge-discount-text {
+  color: #E53935 !important;
+}
+
+/* ==========================================================================
+   NAVBAR IN LIGHT MODE
+   ========================================================================== */
+.light header.site-navbar {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.light header.site-navbar .nav-logo-badge {
+  background-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 10px rgba(46, 125, 50, 0.3) !important;
+}
+
+.light header.site-navbar .nav-logo-drop {
+  color: #2E7D32 !important;
+}
+
+.light header.site-navbar .nav-link-item {
+  color: #333333 !important;
+}
+
+.light header.site-navbar .nav-link-item:hover {
+  color: #2E7D32 !important;
+}
+
+.light header.site-navbar .active-nav {
+  color: #2E7D32 !important;
+}
+
+.light header.site-navbar .active-nav-indicator {
+  background-color: #2E7D32 !important;
+}
+
+.light header.site-navbar .nav-icon-btn {
+  color: #1A1A1A !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  background-color: #FFFFFF !important;
+}
+
+.light header.site-navbar .nav-icon-btn:hover {
+  border-color: #2E7D32 !important;
+  color: #2E7D32 !important;
+}
+
+.light header.site-navbar .nav-icon-btn svg {
+  color: #1A1A1A !important;
+}
+
+.light header.site-navbar .nav-icon-btn:hover svg {
+  color: #2E7D32 !important;
+}
+
+/* ==========================================================================
+   HARD DRIVE STORE SECTION IN LIGHT MODE
+   Section background: #F0F7F0, Cards inside: #FFFFFF
+   ========================================================================== */
+.light #hard-drives {
+  background-color: #F0F7F0 !important;
+}
+
+.light #hard-drives .bg-\[var\(--bg-card\)\] {
+  background-color: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ==========================================================================
+   HERO SECTION & FOOTER (Preserved Dark Theme & Neon Lime #BFFF00)
+   Key rule: The neon lime #BFFF00 appears ONLY inside the dark hero section
+   and the dark footer.
+   ========================================================================== */
+.hero-dark-section {
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.45);
+  --border: rgba(255, 255, 255, 0.1);
+  --accent: #BFFF00;
+}
+
+.hero-dark-section h1,
+.hero-dark-section h1 span.hero-title-line-1 {
+  color: #FFFFFF !important;
+}
+
+.hero-dark-section h1 span.hero-title-line-2 {
+  color: #BFFF00 !important;
+}
+
+.hero-dark-section p,
+.hero-dark-section .hero-subtitle-text {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.hero-dark-section .hero-pill-tag,
+.hero-dark-section div.bg-\[\#BFFF00\]\/10 {
+  background-color: rgba(191, 255, 0, 0.1) !important;
+  color: #BFFF00 !important;
+  border-color: rgba(191, 255, 0, 0.3) !important;
+}
+
+.hero-dark-section span.bg-\[\#BFFF00\] {
+  background-color: #BFFF00 !important;
+}
+
+.hero-dark-section a.bg-\[\#BFFF00\],
+.hero-dark-section button.bg-\[\#BFFF00\] {
+  background-color: #BFFF00 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 24px rgba(191, 255, 0, 0.4) !important;
+}
+
+.hero-dark-section a.bg-\[\#BFFF00\]:hover,
+.hero-dark-section button.bg-\[\#BFFF00\]:hover,
+.hero-dark-section .hover\:bg-\[\#A6E600\]:hover {
+  background-color: #A6E600 !important;
+  color: #000000 !important;
+}
+
+.hero-dark-section a.text-\[\#BFFF00\],
+.hero-dark-section div.text-\[\#BFFF00\],
+.hero-dark-section span.text-\[\#BFFF00\],
+.hero-dark-section svg.text-\[\#BFFF00\] {
+  color: #BFFF00 !important;
+}
+
+.hero-dark-section .hero-badge-pill {
+  color: #FFFFFF !important;
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Footer Section */
+footer.dark-footer,
+.light footer.dark-footer {
+  background-color: #111111 !important;
+  border-top: 1px solid #222222 !important;
+  --bg-primary: #111111;
+  --text-primary: #FFFFFF;
+  --text-secondary: #999999;
+  --text-muted: #666666;
+  --border: #222222;
+}
+
+footer.dark-footer span.bg-\[\#BFFF00\],
+footer.dark-footer span.bg-\[\#CCFF00\] {
+  background-color: #BFFF00 !important;
+  color: #000000 !important;
+}
+
+footer.dark-footer span.text-\[\#BFFF00\],
+footer.dark-footer span.text-\[\#CCFF00\] {
+  color: #BFFF00 !important;
+}
+
+footer.dark-footer span.text-white {
+  color: #FFFFFF !important;
+}
+
+footer.dark-footer p {
+  color: #999999 !important;
+}
+
+footer.dark-footer a {
+  color: #666666 !important;
+}
+
+footer.dark-footer a:hover {
+  color: #BFFF00 !important;
+}
+
+/* ==========================================================================
+   INPUTS & SCROLLBAR CONTROLS IN LIGHT MODE
+   ========================================================================== */
 .light input[type='range'].giga-slider::-webkit-slider-thumb {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: #2E7D32;
   border: 3px solid #FFFFFF;
-  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.45);
+  box-shadow: 0 2px 10px rgba(46, 125, 50, 0.45);
 }
 
 .light .giga-reviews-scroll::-webkit-scrollbar-track {
-  background: #E8EDF5;
-  border-color: #E2E8F0;
+  background: #EAECF0;
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .light .giga-reviews-scroll::-webkit-scrollbar-thumb {
-  background: #059669;
-  box-shadow: 0 0 8px rgba(5, 150, 105, 0.3);
+  background: #2E7D32;
+  box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
 }
 
 .light .lime-glow {
@@ -146,13 +438,16 @@ html.light body {
 
 @keyframes pulseGlowLight {
   0%, 100% {
-    box-shadow: 0 0 16px rgba(5, 150, 105, 0.2);
+    box-shadow: 0 0 16px rgba(46, 125, 50, 0.2);
   }
   50% {
-    box-shadow: 0 0 28px rgba(5, 150, 105, 0.4);
+    box-shadow: 0 0 28px rgba(46, 125, 50, 0.4);
   }
 }
 
+/* ==========================================================================
+   GLOBAL BASE STYLES
+   ========================================================================== */
 * {
   box-sizing: border-box;
 }
