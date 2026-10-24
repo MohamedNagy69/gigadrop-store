@@ -107,6 +107,8 @@ export async function POST(req: Request) {
       walletPhone,
       instapayRef,
       notes,
+      hardDriveOption = 'OWN_DRIVE', // 'OWN_DRIVE' | 'BUY_NEW'
+      hardDriveCapacity,
       items, // array of { gameId, sizeGB }
     } = body;
 
@@ -266,7 +268,13 @@ export async function POST(req: Request) {
         birthdate: birthdate ? new Date(birthdate) : null,
         promoCode: promoCode ? promoCode.trim().toUpperCase() : null,
         referralCodeUsed: referralCode ? referralCode.trim().toUpperCase() : null,
-        notes: notes ? String(notes).trim().slice(0, 500) : null,
+        notes: (() => {
+          const isBuyingHardDrive = hardDriveOption === 'BUY_NEW';
+          const hdNote = isBuyingHardDrive
+            ? `[طلب شراء هارد جديد: نعم | السعة المفضلة: ${hardDriveCapacity || 'يتم التنسيق في الشات'} | يجب الاتفاق ودفع ثمن الهارد أولاً في شات الداش بورد]`
+            : `[خيار الهارد: التحميل على هارد العميل الشخصي]`;
+          return [hdNote, notes].filter(Boolean).join('\n').slice(0, 500);
+        })(),
         items: {
           create: dbGames.map((g) => ({
             gameId: g.id,
@@ -277,7 +285,9 @@ export async function POST(req: Request) {
         statusHistory: {
           create: {
             status: 'PENDING',
-            note: `Order submitted via ${paymentMethod}`,
+            note: hardDriveOption === 'BUY_NEW'
+              ? `Order submitted with Hard Drive purchase request via ${paymentMethod}`
+              : `Order submitted via ${paymentMethod}`,
             changedBy: customerName.trim(),
           },
         },
@@ -290,6 +300,8 @@ export async function POST(req: Request) {
             metadata: {
               walletPhone: walletPhone || null,
               instapayRef: instapayRef || null,
+              hardDriveOption,
+              hardDriveCapacity: hardDriveCapacity || null,
             },
           },
         },
@@ -299,13 +311,58 @@ export async function POST(req: Request) {
       },
     });
 
+    const isBuyingHardDrive = hardDriveOption === 'BUY_NEW';
+    let createdTicketId: string | null = null;
+
+    // If customer selected to buy a hard drive, open a live support chat in customer dashboard
+    if (isBuyingHardDrive && linkedUserId) {
+      try {
+        const ticket = await prisma.ticket.create({
+          data: {
+            userId: linkedUserId,
+            subject: `🛒 شراء هارد ديسك جديد - أوردر #${orderNumber}`,
+            priority: 'URGENT',
+            status: 'OPEN',
+            messages: {
+              create: [
+                {
+                  senderId: linkedUserId,
+                  isAdmin: false,
+                  message: `مرحباً فريق الدعم! 👋 لقد قمت باختيار (شراء هارد ديسك جديد) مع طلبي رقم #${orderNumber} (${dbGames.length} ألعاب · ${totalGB} جيجابايت).\nالسعة المقترحة: ${hardDriveCapacity || 'سأحدد معكم في الشات'}.\nأرجو تزويدي بالأنواع المتاحة وأسعارها وطريقة دفع ثمن الهارد أولاً.`,
+                },
+                {
+                  senderId: 'SYSTEM',
+                  isAdmin: true,
+                  message: `أهلاً بك يا ${customerName}! 🎉 تم استلام طلبك رقم #${orderNumber} بنجاح.\n\nيسعدنا مساعدتك في اختيار أفضل هارد ديسك أصلي ومضمون (SSD فائق السرعة أو HDD سعة ضخمة) بأفضل سعر.\n\n📌 خطوات إتمام الطلب:\n1. سنتفق هنا في الشات على نوع وموديل وسعة الهارد الأنسب لاحتياجاتك.\n2. يتم دفع ثمن الهارد مسبقاً (عبر إنستاباي، فودافون كاش، أو المحافظ الإلكترونية).\n3. فور تأكيد التحويل نبدأ فوراً بتحميل ألعابك وفحصها وتوصيل الهارد لباب بيتك!`,
+                },
+              ],
+            },
+          },
+        });
+        createdTicketId = ticket.id;
+
+        await prisma.notification.create({
+          data: {
+            userId: linkedUserId,
+            title: `شات شراء الهارد مفتوح لطلب #${orderNumber} 🛒`,
+            message: `تم فتح محادثة مباشرة في الدعم الفني للاتفاق على مواصفات ودفع ثمن الهارد الجديد.`,
+            type: 'ORDER_UPDATE',
+          },
+        });
+      } catch (ticketErr) {
+        console.error('Failed to auto-create hard drive ticket:', ticketErr);
+      }
+    }
+
     // Create Notification for Customer
     if (linkedUserId) {
       await prisma.notification.create({
         data: {
           userId: linkedUserId,
           title: `Order ${orderNumber} Queued! 🎮`,
-          message: `We received your order of ${dbGames.length} games (${totalGB} GB). Our courier will contact you within 24 hours.`,
+          message: isBuyingHardDrive
+            ? `We received your order with Hard Drive purchase. Please coordinate in support chat to confirm drive details.`
+            : `We received your order of ${dbGames.length} games (${totalGB} GB). Our courier will contact you within 24 hours.`,
           type: 'ORDER_UPDATE',
         },
       });
@@ -317,7 +374,9 @@ export async function POST(req: Request) {
         orderId: order.id,
         phone: whatsapp || phone,
         template: 'order_confirmation',
-        message: `Hello ${customerName}! Your GIGADROP order ${orderNumber} (${dbGames.length} games · ${totalGB} GB · ${totalPrice.toFixed(2)} EGP) is queued. Track at /track`,
+        message: isBuyingHardDrive
+          ? `Hello ${customerName}! Your GIGADROP order ${orderNumber} with HARD DRIVE PURCHASE request is queued. Chat with us in /dashboard/support to confirm drive specs and upfront payment.`
+          : `Hello ${customerName}! Your GIGADROP order ${orderNumber} (${dbGames.length} games · ${totalGB} GB · ${totalPrice.toFixed(2)} EGP) is queued. Track at /track`,
         status: 'SENT',
       },
     });
@@ -336,6 +395,9 @@ export async function POST(req: Request) {
           paymentRef: order.paymentRef,
           gamesCount: dbGames.length,
           customerName: order.customerName,
+          withHardDrive: isBuyingHardDrive,
+          hardDriveCapacity: hardDriveCapacity || null,
+          ticketId: createdTicketId,
         },
       },
       { status: 201 }

@@ -20,6 +20,7 @@ export default function CartSidebar() {
   } = useCartStore();
   const { locale } = useThemeStore();
   const t = translations[locale];
+  const isAr = locale === 'ar';
 
   if (!isCartOpen) return null;
 
@@ -158,6 +159,16 @@ export default function CartSidebar() {
                   <span className="text-xs font-bold text-[#CCFF00]">{t.egpCurrency}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Hard Drive Options Tip */}
+            <div className="flex items-center gap-2 rounded-lg border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-3 py-2 text-xs text-[var(--text-primary)]">
+              <HardDrive className="h-4 w-4 shrink-0 text-[#CCFF00]" />
+              <span className="leading-snug">
+                {isAr
+                  ? 'متاح شراء هارد ديسك جديد مع الألعاب أو التحميل على هاردك.'
+                  : 'Option to buy a new hard drive or load on your personal drive.'}
+              </span>
             </div>
 
             <button

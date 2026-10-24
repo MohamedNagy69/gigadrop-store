@@ -375,10 +375,23 @@ export function CustomerOrdersClient({ orders }: { orders: any[] }) {
             <TableBody>
               {orders.map((order) => {
                 const st = statusBadge(order.status);
+                const isHardDriveOrder =
+                  order.notes &&
+                  (order.notes.includes('شراء هارد') ||
+                    order.notes.includes('BUY_NEW') ||
+                    order.notes.includes('شراء هارد جديد'));
                 return (
                   <TableRow key={order.id} hover>
                     <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>
-                      {order.orderNumber}
+                      <div className="flex flex-col gap-1">
+                        <span>{order.orderNumber}</span>
+                        {isHardDriveOrder && (
+                          <span className="inline-flex items-center gap-1 rounded bg-[#CCFF00]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#CCFF00]">
+                            <HardDrive className="h-3 w-3" />
+                            {isAr ? 'شراء هارد جديد' : 'New Drive'}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       {new Date(order.createdAt).toLocaleDateString()}
@@ -411,6 +424,15 @@ export function CustomerOrdersClient({ orders }: { orders: any[] }) {
                     </TableCell>
                     <TableCell align="right">
                       <div className="flex items-center justify-end gap-2">
+                        {isHardDriveOrder && (
+                          <Link
+                            href="/dashboard/support"
+                            className="inline-flex items-center gap-1 rounded-[6px] border border-[#CCFF00]/40 bg-[#CCFF00]/10 px-2 py-1 text-xs font-bold text-[#CCFF00] hover:bg-[#CCFF00] hover:text-black transition-colors"
+                          >
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            {isAr ? 'شات الهارد' : 'Drive Chat'}
+                          </Link>
+                        )}
                         <Link
                           href={`/dashboard/orders/${order.id}`}
                           className="inline-flex items-center gap-1 rounded-[6px] bg-[#CCFF00] px-2.5 py-1 text-xs font-bold text-black"

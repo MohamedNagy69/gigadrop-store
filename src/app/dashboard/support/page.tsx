@@ -49,7 +49,15 @@ export default function CustomerSupportPage() {
       const data = await res.json();
       if (data.tickets && data.tickets.length > 0) {
         setTickets(data.tickets);
+        const urlTicketId =
+          typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search).get('ticketId')
+            : null;
         setSelectedTicket((prev: any) => {
+          if (urlTicketId) {
+            const direct = data.tickets.find((t: any) => t.id === urlTicketId);
+            if (direct) return direct;
+          }
           if (!prev) return data.tickets[0];
           return data.tickets.find((t: any) => t.id === prev.id) || data.tickets[0];
         });

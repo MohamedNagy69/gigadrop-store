@@ -13,7 +13,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { Eye, FileText, MessageCircle, Search } from 'lucide-react';
+import { Eye, FileText, MessageCircle, Search, HardDrive, MessageSquare } from 'lucide-react';
 import { formatNumber, getWhatsAppUrl } from '@/lib/utils';
 import { useThemeStore } from '@/stores/themeStore';
 import { statusLabelAr } from '@/components/dashboard/DashboardClientViews';
@@ -131,93 +131,117 @@ export default function AdminOrdersPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id} hover>
-                  <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>
-                    {order.orderNumber}
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-xs font-bold">{order.customerName}</p>
-                    <p className="text-[11px] text-[var(--text-secondary)]" dir="ltr">
-                      {order.phone}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    {order.items?.length || 0} {isAr ? 'ألعاب' : 'games'} ·{' '}
-                    {formatNumber(order.totalGB)} {isAr ? 'جيجا' : 'GB'}
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#CCFF00' }}>
-                    {formatNumber(order.totalPrice)} {isAr ? 'ج.م' : 'EGP'}
-                  </TableCell>
-                  <TableCell>
-                    <span className="block text-xs font-bold">{order.paymentMethod}</span>
-                    <Chip
-                      label={order.paymentStatus}
-                      size="small"
-                      sx={{
-                        height: 18,
-                        fontSize: '9px',
-                        bgcolor:
-                          order.paymentStatus === 'PAID'
-                            ? 'rgba(204,255,0,0.2)'
-                            : 'rgba(250,204,21,0.2)',
-                        color:
-                          order.paymentStatus === 'PAID' ? '#CCFF00' : '#FACC15',
-                        fontWeight: 700,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <select
-                      value={order.status}
-                      onChange={(e) =>
-                        handleQuickStatusChange(order.id, e.target.value)
-                      }
-                      className="rounded border border-[var(--border)] bg-[var(--bg-primary)] px-2 py-1 text-xs font-bold text-[#CCFF00] outline-none"
-                    >
-                      {['PENDING', 'PROCESSING', 'READY', 'DELIVERED', 'CANCELLED'].map(
-                        (s) => (
-                          <option key={s} value={s}>
-                            {statusLabelAr(s, isAr)}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </TableCell>
-                  <TableCell align="right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Link
-                        href={`/admin/orders/${order.id}`}
-                        className="rounded bg-[#CCFF00] p-1.5 text-black"
-                        title={isAr ? 'تفاصيل الطلب' : 'Order Details'}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </Link>
-                      <a
-                        href={getWhatsAppUrl(
-                          order.whatsapp || order.phone,
-                          `Hello ${order.customerName}! Regarding your GIGADROP order ${order.orderNumber} (${order.totalGB} GB):`
+              {orders.map((order) => {
+                const isHardDriveOrder =
+                  order.notes &&
+                  (order.notes.includes('شراء هارد') ||
+                    order.notes.includes('BUY_NEW') ||
+                    order.notes.includes('شراء هارد جديد'));
+                return (
+                  <TableRow key={order.id} hover>
+                    <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>
+                      <div className="flex flex-col gap-1">
+                        <span>{order.orderNumber}</span>
+                        {isHardDriveOrder && (
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">
+                            <HardDrive className="h-2.5 w-2.5" />
+                            {isAr ? 'طلب شراء هارد' : 'Hard Drive Request'}
+                          </span>
                         )}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded border border-[var(--border)] p-1.5 text-[#CCFF00] hover:border-[#CCFF00]"
-                        title={isAr ? 'تواصل عبر واتساب' : 'WhatsApp Customer'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-xs font-bold">{order.customerName}</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]" dir="ltr">
+                        {order.phone}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      {order.items?.length || 0} {isAr ? 'ألعاب' : 'games'} ·{' '}
+                      {formatNumber(order.totalGB)} {isAr ? 'جيجا' : 'GB'}
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#CCFF00' }}>
+                      {formatNumber(order.totalPrice)} {isAr ? 'ج.م' : 'EGP'}
+                    </TableCell>
+                    <TableCell>
+                      <span className="block text-xs font-bold">{order.paymentMethod}</span>
+                      <Chip
+                        label={order.paymentStatus}
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '9px',
+                          bgcolor:
+                            order.paymentStatus === 'PAID'
+                              ? 'rgba(204,255,0,0.2)'
+                              : 'rgba(250,204,21,0.2)',
+                          color:
+                            order.paymentStatus === 'PAID' ? '#CCFF00' : '#FACC15',
+                          fontWeight: 700,
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <select
+                        value={order.status}
+                        onChange={(e) =>
+                          handleQuickStatusChange(order.id, e.target.value)
+                        }
+                        className="rounded border border-[var(--border)] bg-[var(--bg-primary)] px-2 py-1 text-xs font-bold text-[#CCFF00] outline-none"
                       >
-                        <MessageCircle className="h-3.5 w-3.5" />
-                      </a>
-                      <a
-                        href={`/api/invoices/${order.orderNumber}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded border border-[var(--border)] p-1.5 text-[var(--text-secondary)] hover:border-[#CCFF00]"
-                        title={isAr ? 'إصدار الفاتورة' : 'Generate Invoice'}
-                      >
-                        <FileText className="h-3.5 w-3.5" />
-                      </a>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        {['PENDING', 'PROCESSING', 'READY', 'DELIVERED', 'CANCELLED'].map(
+                          (s) => (
+                            <option key={s} value={s}>
+                              {statusLabelAr(s, isAr)}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </TableCell>
+                    <TableCell align="right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {isHardDriveOrder && (
+                          <Link
+                            href="/admin/tickets"
+                            className="rounded border border-amber-400/50 bg-amber-400/10 p-1.5 text-amber-400 hover:bg-amber-400 hover:text-black transition-colors"
+                            title={isAr ? 'محادثة شراء الهارد في الدعم الفني' : 'Drive Support Chat'}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          className="rounded bg-[#CCFF00] p-1.5 text-black"
+                          title={isAr ? 'تفاصيل الطلب' : 'Order Details'}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Link>
+                        <a
+                          href={getWhatsAppUrl(
+                            order.whatsapp || order.phone,
+                            `Hello ${order.customerName}! Regarding your GIGADROP order ${order.orderNumber} (${order.totalGB} GB):`
+                          )}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded border border-[var(--border)] p-1.5 text-[#CCFF00] hover:border-[#CCFF00]"
+                          title={isAr ? 'تواصل عبر واتساب' : 'WhatsApp Customer'}
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                        </a>
+                        <a
+                          href={`/api/invoices/${order.orderNumber}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded border border-[var(--border)] p-1.5 text-[var(--text-secondary)] hover:border-[#CCFF00]"
+                          title={isAr ? 'إصدار الفاتورة' : 'Generate Invoice'}
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CheckCircle2, FileText, PackageSearch } from 'lucide-react';
+import { CheckCircle2, FileText, PackageSearch, MessageSquare, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { translations } from '@/lib/i18n';
@@ -60,7 +60,7 @@ export default function OrderSuccessModal() {
           <div className="flex items-center justify-between text-xs">
             <span className="text-[var(--text-secondary)]">{t.paymentMethodLabel}</span>
             <span className="font-semibold text-[var(--text-primary)]">
-              {isAr ? 'الدفع عند الاستلام (Cash on Delivery)' : 'Cash on Delivery (COD)'}
+              {isAr ? 'الدفع عند الاستلام (الألعاب)' : 'Cash on Delivery (Games)'}
             </span>
           </div>
           <div className="flex items-center justify-between border-t border-[var(--border)] pt-2 text-sm">
@@ -70,6 +70,29 @@ export default function OrderSuccessModal() {
             </span>
           </div>
         </div>
+
+        {/* Hard Drive Chat Prompt if customer requested buying a new drive */}
+        {orderSuccess.withHardDrive && (
+          <div className="mt-5 rounded-[12px] border border-[#CCFF00] bg-[#CCFF00]/15 p-4 text-start shadow-[0_0_20px_rgba(204,255,0,0.15)]">
+            <div className="flex items-center gap-2 text-xs font-black uppercase text-[#CCFF00]">
+              <ShoppingBag className="h-4 w-4" />
+              <span>{isAr ? 'طلب شراء هارد ديسك جديد مع الألعاب' : 'NEW HARD DRIVE ORDER'}</span>
+            </div>
+            <p className="mt-1.5 text-xs text-[var(--text-primary)] leading-relaxed font-medium">
+              {isAr
+                ? 'تم فتح شات مباشر مع الإدارة في الداش بورد الخاص بك للاتفاق على مواصفات الهارد وسعره، ودفع ثمن الهارد أولاً قبل بدء التحميل.'
+                : 'A live support chat has been opened in your dashboard to coordinate drive specifications and upfront payment.'}
+            </p>
+            <Link
+              href={`/dashboard/support${orderSuccess.ticketId ? `?ticketId=${orderSuccess.ticketId}` : ''}`}
+              onClick={() => setOrderSuccess(null)}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#CCFF00] px-4 py-2.5 text-xs font-black text-black shadow-md transition-all hover:bg-[#B8E600]"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>{isAr ? 'فتح الشات للاتفاق ودفع ثمن الهارد الآن ›' : 'Open Support Chat & Pay for Drive Now ›'}</span>
+            </Link>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="mt-6 flex flex-col gap-2.5">

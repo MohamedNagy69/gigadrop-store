@@ -8,6 +8,7 @@ import { translations } from '@/lib/i18n';
 export default function HowItWorks() {
   const { locale } = useThemeStore();
   const t = translations[locale];
+  const isAr = locale === 'ar';
 
   const steps = [
     {
@@ -75,6 +76,29 @@ export default function HowItWorks() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* New Hard Drives Store Option Banner */}
+            <div className="mt-8 rounded-[12px] border border-[#CCFF00]/40 bg-[#CCFF00]/10 p-5 sm:p-6 backdrop-blur-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#CCFF00] text-black shadow-md">
+                    <HardDrive className="h-6 w-6" />
+                  </span>
+                  <div>
+                    <h4 className="text-base sm:text-lg font-black text-[var(--text-primary)]">
+                      {isAr
+                        ? 'لا تملك هارد ديسك كافي؟ نوفر لك هاردات جديدة أصلية ومضمونة!'
+                        : 'Don’t have a drive? We provide brand-new verified hard drives!'}
+                    </h4>
+                    <p className="mt-1 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+                      {isAr
+                        ? 'يمكنك اختيار (شراء هارد جديد) عند إتمام الطلب، وسيتم فتح محادثة شات مباشرة مع الإدارة في لوحة تحكمك لاختيار سعة الهارد المناسبة لك (SSD أو HDD) ودفع ثمن الهارد أولاً، ثم نملأه بألعابك المفضلة!'
+                        : 'Select "Buy New Hard Drive" at checkout. A live chat opens in your dashboard to agree on the drive model, pricing, and upfront payment before games are loaded!'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -162,10 +162,10 @@ export default function Hero() {
             {/* Badges Strip + Magnetic CTA Button */}
             <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-3.5">
               
-              {/* Rate per GB Badge */}
+              {/* Hard Drive Options Badge */}
               <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-4 py-2.5 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40">
-                <Flame className="h-4 w-4 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
-                <span>{t.badgePricePerGB}</span>
+                <HardDrive className="h-4 w-4 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
+                <span>{isAr ? 'شراء هارد جديد أو التحميل على هاردك' : 'Buy New Hard Drive or Load on Yours'}</span>
               </div>
 
               {/* Cash on Delivery Badge */}

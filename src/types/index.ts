@@ -51,4 +51,7 @@ export interface OrderSuccessData {
   paymentRef?: string | null;
   gamesCount: number;
   customerName: string;
+  withHardDrive?: boolean;
+  hardDriveCapacity?: string;
+  ticketId?: string | null;
 }
