@@ -105,7 +105,7 @@ export default function Hero() {
     <section
       ref={heroRef}
       dir={isAr ? 'rtl' : 'ltr'}
-      className={`relative min-h-screen min-h-[100dvh] w-full overflow-hidden border-b border-[var(--border)] pt-24 pb-16 sm:pt-28 sm:pb-20 flex items-center justify-center ${
+      className={`relative h-screen max-h-screen min-h-[580px] w-full overflow-hidden border-b border-[var(--border)] pt-20 pb-4 flex items-center justify-center ${
         isAr ? 'font-cairo' : 'font-sans'
       }`}
     >
@@ -140,7 +140,7 @@ export default function Hero() {
             }`}
           >
             {/* Top Status Tag */}
-            <div className="hero-pill-tag mb-5 inline-flex items-center gap-2 rounded-full border border-[#CCFF00]/30 dark:border-[#CCFF00]/30 light:border-emerald-600/30 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-600/10 px-3.5 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800 shadow-[0_0_16px_rgba(204,255,0,0.15)]">
+            <div className="hero-pill-tag mb-3 inline-flex items-center gap-2 rounded-full border border-[#CCFF00]/30 dark:border-[#CCFF00]/30 light:border-emerald-600/30 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-600/10 px-3.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800 shadow-[0_0_16px_rgba(204,255,0,0.15)]">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-600 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-600" />
@@ -149,7 +149,7 @@ export default function Hero() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[76px] font-black tracking-tight leading-[1.08]">
+            <h1 className="text-4xl sm:text-5xl lg:text-[54px] xl:text-[62px] font-black tracking-tight leading-[1.08]">
               <span className="hero-title-line-1 block text-white dark:text-white light:text-slate-950">
                 {t.heroTitleLine1}
               </span>
@@ -159,22 +159,22 @@ export default function Hero() {
             </h1>
 
             {/* Subtitle Paragraph */}
-            <p className="hero-subtitle-text mt-6 max-w-xl text-base sm:text-lg leading-[1.75] text-zinc-400 dark:text-zinc-400 light:text-slate-600 font-normal">
+            <p className="hero-subtitle-text mt-3.5 max-w-lg text-sm sm:text-base leading-[1.65] text-zinc-400 dark:text-zinc-400 light:text-slate-600 font-normal">
               {t.heroSubtitle}
             </p>
 
             {/* Badges Strip + Magnetic CTA Button */}
-            <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-3.5">
+            <div className="mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3">
               
               {/* Hard Drive Options Badge */}
-              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-4 py-2.5 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40">
-                <HardDrive className="h-4 w-4 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
+              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3.5 py-2 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40">
+                <HardDrive className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
                 <span>{isAr ? 'شراء هارد جديد أو التحميل على هاردك' : 'Buy New Hard Drive or Load on Yours'}</span>
               </div>
 
               {/* Cash on Delivery Badge */}
-              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-4 py-2.5 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40">
-                <ShieldCheck className="h-4 w-4 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
+              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3.5 py-2 text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700" />
                 <span>{t.badgeCashOnDelivery}</span>
               </div>
 
@@ -182,7 +182,7 @@ export default function Hero() {
               <a
                 ref={magneticBtnRef}
                 href="#library"
-                className="hero-badge-pill group relative inline-flex h-11 items-center gap-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-700 px-6 text-xs sm:text-sm font-black text-black light:text-white shadow-[0_0_24px_rgba(204,255,0,0.4)] light:shadow-[0_4px_16px_rgba(22,101,52,0.35)] transition-all hover:scale-105 hover:bg-[#B8E600] light:hover:bg-emerald-800"
+                className="hero-badge-pill group relative inline-flex h-10 items-center gap-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-700 px-5 text-xs sm:text-sm font-black text-black light:text-white shadow-[0_0_24px_rgba(204,255,0,0.4)] light:shadow-[0_4px_16px_rgba(22,101,52,0.35)] transition-all hover:scale-105 hover:bg-[#B8E600] light:hover:bg-emerald-800"
               >
                 <Gamepad2 className="h-4 w-4 transition-transform group-hover:rotate-12" />
                 <span>{t.browseLibraryBtn}</span>
@@ -196,9 +196,9 @@ export default function Hero() {
               {/* Hard Drive Store CTA Button */}
               <a
                 href="#hard-drives"
-                className="hero-badge-pill group relative inline-flex h-11 items-center gap-2 rounded-full border border-[#CCFF00]/40 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-600/10 px-5 text-xs sm:text-sm font-black text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800 hover:bg-[#CCFF00] hover:text-black dark:hover:bg-[#CCFF00] dark:hover:text-black transition-all hover:scale-105"
+                className="hero-badge-pill group relative inline-flex h-10 items-center gap-2 rounded-full border border-[#CCFF00]/40 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-600/10 px-4 text-xs sm:text-sm font-black text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800 hover:bg-[#CCFF00] hover:text-black dark:hover:bg-[#CCFF00] dark:hover:text-black transition-all hover:scale-105"
               >
-                <HardDrive className="h-4 w-4" />
+                <HardDrive className="h-3.5 w-3.5" />
                 <span>{isAr ? 'متجر الهاردات' : 'Hard Drives Store'}</span>
               </a>
 
@@ -207,7 +207,7 @@ export default function Hero() {
 
           {/* Right Column: 3D Scientific Moving Object (Wireframe Geodesic Sphere + Core + Parallax) */}
           <div className="hero-3d-visual lg:col-span-5 flex items-center justify-center relative w-full">
-            <div className="relative w-full max-w-[480px] sm:max-w-[540px] aspect-square flex items-center justify-center">
+            <div className="relative w-full max-w-[340px] sm:max-w-[400px] lg:max-w-[440px] xl:max-w-[480px] aspect-square flex items-center justify-center">
               {/* Volumetric Radial Glow behind 3D Object */}
               <div
                 className="pointer-events-none absolute inset-4 rounded-full blur-[90px] opacity-60"
