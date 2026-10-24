@@ -2,6 +2,10 @@
 const nextConfig = {
   poweredByHeader: false,
   images: {
+    // Security hardening: the app renders plain <img> tags and never uses next/image,
+    // so the built-in optimizer (/_next/image -> sharp/libvips/libheif) is fully disabled.
+    // This removes the sharp RCE attack surface (GHSA-2464-fhr4-w9xw, GHSA-2xp9-vwfh-vxw4) at the root.
+    unoptimized: true,
     formats: ['image/webp'],
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
