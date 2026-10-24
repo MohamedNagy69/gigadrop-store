@@ -193,6 +193,15 @@ export default function Hero() {
                 )}
               </a>
 
+              {/* Hard Drive Store CTA Button */}
+              <a
+                href="#hard-drives"
+                className="hero-badge-pill group relative inline-flex h-11 items-center gap-2 rounded-full border border-[#CCFF00]/40 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-600/10 px-5 text-xs sm:text-sm font-black text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800 hover:bg-[#CCFF00] hover:text-black dark:hover:bg-[#CCFF00] dark:hover:text-black transition-all hover:scale-105"
+              >
+                <HardDrive className="h-4 w-4" />
+                <span>{isAr ? 'متجر الهاردات' : 'Hard Drives Store'}</span>
+              </a>
+
             </div>
           </div>
 

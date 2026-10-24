@@ -27,6 +27,7 @@ export default function Navbar() {
 
   const { items, wishlistIds, setCartOpen } = useCartStore();
   const { locale } = useThemeStore();
+  const isAr = locale === 'ar';
   const { user, isAuthenticated, isAdmin } = useAuth();
   const t = translations[locale];
 
@@ -39,7 +40,8 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: '/#library', label: t.navLibrary },
+    { href: '/#library', label: isAr ? 'مكتبة الألعاب' : 'Library' },
+    { href: '/#hard-drives', label: isAr ? 'متجر الهاردات' : 'Hard Drives' },
     { href: '/games', label: t.navGenres },
     { href: '/#how-it-works', label: t.navHowItWorks },
     ...(isAuthenticated && !isAdmin ? [{ href: '/track', label: t.trackOrder }] : []),

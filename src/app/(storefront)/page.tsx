@@ -2,6 +2,7 @@ import React from 'react';
 import { calculatePrice } from '@/lib/utils';
 import Hero from '@/components/storefront/Hero';
 import GameGrid from '@/components/storefront/GameGrid';
+import HardDriveStore from '@/components/storefront/HardDriveStore';
 import HowItWorks from '@/components/storefront/HowItWorks';
 import { FALLBACK_GAMES } from '@/lib/fallbackCatalog';
 import { safePrismaQuery } from '@/lib/safePrisma';
@@ -49,6 +50,7 @@ export default async function HomePage() {
     <>
       <Hero />
       <GameGrid initialGames={games} />
+      <HardDriveStore />
       <HowItWorks />
     </>
   );
