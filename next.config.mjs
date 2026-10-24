@@ -19,6 +19,10 @@ const nextConfig = {
     ],
   },
   transpilePackages: ['three'],
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   async headers() {
     return [
       {
