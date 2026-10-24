@@ -1,38 +1,36 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Paper, Typography } from '@mui/material';
-import { Send, Reply, Trash2, X, MessageSquare, User } from 'lucide-react';
+import WhatsAppChatView from '@/components/chat/WhatsAppChatView';
 import { useThemeStore } from '@/stores/themeStore';
-
-function parseQuotedMessage(raw: string) {
-  const match = raw.match(/^\[\[QUOTE:([^|]+)\|([\s\S]*?)\]\]\n([\s\S]*)$/);
-  if (!match) {
-    return { quoteSender: null, quoteText: null, body: raw };
-  }
-  return {
-    quoteSender: match[1],
-    quoteText: match[2],
-    body: match[3],
-  };
-}
+import {
+  MessageSquare,
+  Search,
+  CheckCheck,
+  Check,
+  Phone,
+  ExternalLink,
+  Trash2,
+  HardDrive,
+  User,
+  Filter,
+  Sparkles,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 
 export default function AdminTicketsPage() {
-  const { locale } = useThemeStore();
+  const { locale, theme } = useThemeStore();
   const isAr = locale === 'ar';
+  const isDark = theme !== 'light';
 
   const [tickets, setTickets] = useState<any[]>([]);
-  const [selected, setSelected] = useState<any | null>(null);
-  const [reply, setReply] = useState('');
-  const [sending, setSending] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<{
-    id: string;
-    sender: string;
-    text: string;
-  } | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'UNREAD' | 'ORDERS'>('ALL');
+  const [loading, setLoading] = useState(true);
 
   const selectedIdRef = useRef<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const loadTickets = async () => {
     try {
@@ -41,7 +39,7 @@ export default function AdminTicketsPage() {
       const data = await res.json();
       if (Array.isArray(data.tickets)) {
         setTickets(data.tickets);
-        setSelected((prev: any) => {
+        setSelectedTicket((prev: any) => {
           const currentId = selectedIdRef.current || prev?.id;
           if (currentId) {
             const found = data.tickets.find((t: any) => t.id === currentId);
@@ -54,363 +52,357 @@ export default function AdminTicketsPage() {
       }
     } catch {
       // ignore poll error
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadTickets();
-    const interval = setInterval(loadTickets, 3000);
+    const interval = setInterval(loadTickets, 2500);
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [selected?.messages?.length]);
-
   const handleSelectTicket = (t: any) => {
     selectedIdRef.current = t.id;
-    setSelected(t);
-    setReplyingTo(null);
+    setSelectedTicket(t);
+
+    // When admin opens the ticket, immediately mark messages as read
+    fetch(`/api/tickets/${t.id}/messages`).catch(() => {});
   };
 
-  const handleReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selected || !reply.trim() || sending) return;
-    setSending(true);
-    try {
-      const res = await fetch(`/api/tickets/${selected.id}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          senderId: 'admin',
-          message: reply,
-          isAdmin: true,
-          status: 'IN_PROGRESS',
-          replyToSender: replyingTo?.sender,
-          replyToText: replyingTo?.text,
-        }),
-      });
+  const handleSendMessage = async (text: string, mediaUrl?: string, replyTo?: any) => {
+    if (!selectedTicket) return;
+
+    const res = await fetch(`/api/tickets/${selectedTicket.id}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        mediaUrl,
+        isAdmin: true,
+        status: 'IN_PROGRESS',
+        replyToSender: replyTo?.sender,
+        replyToText: replyTo?.text,
+      }),
+    });
+
+    if (res.ok) {
       const data = await res.json();
-      setReply('');
-      setReplyingTo(null);
       if (data.ticket) {
-        setSelected(data.ticket);
+        setSelectedTicket(data.ticket);
         loadTickets();
       }
-    } finally {
-      setSending(false);
     }
   };
 
   const handleDeleteMessage = async (messageId: string) => {
-    if (!selected) return;
+    if (!selectedTicket) return;
     const res = await fetch(
-      `/api/tickets/${selected.id}/messages?messageId=${messageId}`,
+      `/api/tickets/${selectedTicket.id}/messages?messageId=${messageId}`,
       { method: 'DELETE' }
     );
-    const data = await res.json();
-    if (data.ticket) {
-      setSelected(data.ticket);
-      loadTickets();
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ticket) {
+        setSelectedTicket(data.ticket);
+        loadTickets();
+      }
     }
   };
 
-  const handleDeleteTicket = async (ticketId: string) => {
-    await fetch(`/api/tickets/${ticketId}/messages`, { method: 'DELETE' });
-    setReplyingTo(null);
-    const remaining = tickets.filter((t) => t.id !== ticketId);
+  const handleDeleteTicket = async () => {
+    if (!selectedTicket) return;
+    const confirmDelete = window.confirm(
+      isAr
+        ? 'هل أنت متأكد من مسح هذه المحادثة بالكامل؟'
+        : 'Are you sure you want to delete this entire chat conversation?'
+    );
+    if (!confirmDelete) return;
+
+    await fetch(`/api/tickets/${selectedTicket.id}/messages`, { method: 'DELETE' });
+    const remaining = tickets.filter((t) => t.id !== selectedTicket.id);
     setTickets(remaining);
     const next = remaining[0] || null;
     selectedIdRef.current = next?.id || null;
-    setSelected(next);
+    setSelectedTicket(next);
   };
 
+  // Filter conversations
+  const filteredTickets = tickets.filter((t) => {
+    // 1. Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const customerName = (t.user?.name || '').toLowerCase();
+      const customerEmail = (t.user?.email || '').toLowerCase();
+      const customerPhone = (t.user?.phone || t.user?.whatsapp || '').toLowerCase();
+      const lastMsg = (t.messages?.[t.messages.length - 1]?.message || '').toLowerCase();
+      const orderNumber = (t.order?.orderNumber || '').toLowerCase();
+
+      const matchesSearch =
+        customerName.includes(q) ||
+        customerEmail.includes(q) ||
+        customerPhone.includes(q) ||
+        lastMsg.includes(q) ||
+        orderNumber.includes(q);
+
+      if (!matchesSearch) return false;
+    }
+
+    // 2. Tab filter
+    if (activeFilter === 'UNREAD') {
+      return (t.unreadCount || 0) > 0;
+    }
+    if (activeFilter === 'ORDERS') {
+      return Boolean(t.orderId || t.order);
+    }
+    return true;
+  });
+
+  const totalUnread = tickets.reduce((acc, t) => acc + (t.unreadCount || 0), 0);
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#CCFF00]">
-          {isAr ? 'نظام المحادثات المباشرة مع العملاء' : 'LIVE CUSTOMER CHAT'}
-        </span>
-        <Typography variant="h4" fontWeight={800}>
-          {isAr
-            ? `شات الدعم الفني مع العملاء (${tickets.length})`
-            : `Customer Support Chats (${tickets.length})`}
-        </Typography>
+    <div className="mx-auto max-w-7xl space-y-4">
+      {/* Top Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span className="text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            {isAr ? 'نظام محادثات واتساب المباشر' : 'WHATSAPP LIVE CHAT SYSTEM'}
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)]">
+            {isAr ? 'شات العملاء والدعم الفني' : 'Customer WhatsApp Support'}
+            {totalUnread > 0 && (
+              <span className="ms-2.5 inline-flex items-center justify-center rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-extrabold text-white animate-pulse">
+                {totalUnread} {isAr ? 'غير مقروءة' : 'unread'}
+              </span>
+            )}
+          </h1>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Sidebar: Customer Conversations List */}
-        <Paper
-          sx={{ p: 3, borderRadius: 3 }}
-          className="lg:col-span-4 space-y-2.5 max-h-[72vh] overflow-y-auto"
-        >
-          {tickets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 text-center text-xs text-[var(--text-secondary)]">
-              <MessageSquare className="mb-2 h-8 w-8 text-[#CCFF00]" />
-              <p>
-                {isAr
-                  ? 'لا توجد محادثات نشطة حالياً. ستظهر محادثة العميل هنا فور إرساله رسالة من صفحة الدعم الفني.'
-                  : 'No active customer chats yet. Conversations appear here when a customer messages support.'}
-              </p>
+      {/* Main 2-Column WhatsApp Web Container */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[78vh] min-h-[600px] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] shadow-2xl">
+        {/* ----------------------------------------------------------- */}
+        {/* LEFT COLUMN: WHATSAPP WEB CONVERSATIONS SIDEBAR             */}
+        {/* ----------------------------------------------------------- */}
+        <div className="lg:col-span-4 xl:col-span-4 flex flex-col border-e border-[var(--border)] bg-[var(--bg-primary)] overflow-hidden">
+          {/* WhatsApp Sidebar Header */}
+          <div className="border-b border-[var(--border)] p-3.5 flex items-center justify-between gap-2 bg-[var(--bg-card)]">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-sm font-black text-white shadow-sm">
+                💬
+              </span>
+              <div>
+                <p className="text-xs font-black text-[var(--text-primary)]">
+                  {isAr ? 'محادثات العملاء' : 'Customer Chats'}
+                </p>
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                  {tickets.length} {isAr ? 'محادثة نشطة' : 'active threads'}
+                </p>
+              </div>
             </div>
-          ) : (
-            tickets.map((t) => {
-              const customerName = t.user?.name || (isAr ? 'عميل' : 'Customer');
-              const customerEmail = t.user?.email || '';
-              const lastMsgRaw =
-                t.messages?.[t.messages.length - 1]?.message || '';
-              const lastMsg = parseQuotedMessage(lastMsgRaw).body;
-              const msgsCount = t.messages?.length || 0;
-              const isSelected = selected?.id === t.id;
+          </div>
 
-              return (
-                <div
-                  key={t.id}
-                  onClick={() => handleSelectTicket(t)}
-                  className={`cursor-pointer w-full rounded-[12px] border p-3.5 text-start transition-all ${
-                    isSelected
-                      ? 'border-[#CCFF00] bg-[#CCFF00]/10 shadow-sm'
-                      : 'border-[var(--border)] bg-[var(--bg-primary)] hover:border-[#CCFF00]/50'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5 overflow-hidden">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#CCFF00] text-xs font-black text-black">
+          {/* Search Box */}
+          <div className="p-3 border-b border-[var(--border)] bg-[var(--bg-primary)]">
+            <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3.5 py-1.5 text-xs">
+              <Search className="h-3.5 w-3.5 text-[var(--text-muted)] shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isAr ? 'بحث بالاسم، الهاتف، أو الرسالة...' : 'Search customer, phone, message...'}
+                className="w-full bg-transparent text-xs text-[var(--text-primary)] outline-none"
+              />
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="mt-2.5 flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setActiveFilter('ALL')}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all ${
+                  activeFilter === 'ALL'
+                    ? 'bg-emerald-600 text-white'
+                    : 'border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-emerald-500'
+                }`}
+              >
+                {isAr ? 'الكل' : 'All'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveFilter('UNREAD')}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all ${
+                  activeFilter === 'UNREAD'
+                    ? 'bg-emerald-600 text-white'
+                    : 'border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-emerald-500'
+                }`}
+              >
+                {isAr ? 'غير مقروءة' : 'Unread'}
+                {totalUnread > 0 && ` (${totalUnread})`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveFilter('ORDERS')}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all ${
+                  activeFilter === 'ORDERS'
+                    ? 'bg-emerald-600 text-white'
+                    : 'border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-emerald-500'
+                }`}
+              >
+                {isAr ? 'طلبات هاردات 📦' : 'Orders 📦'}
+              </button>
+            </div>
+          </div>
+
+          {/* Conversations Scroll List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-[var(--border)]">
+            {filteredTickets.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center text-xs text-[var(--text-secondary)]">
+                <MessageSquare className="mb-2 h-8 w-8 text-emerald-500 opacity-60" />
+                <p className="font-bold">
+                  {isAr ? 'لا توجد محادثات تطابق البحث' : 'No conversations match search'}
+                </p>
+              </div>
+            ) : (
+              filteredTickets.map((t) => {
+                const customerName = t.user?.name || (isAr ? 'عميل GigaDrop' : 'Customer');
+                const customerPhone = t.user?.phone || t.user?.whatsapp || '';
+                const lastMsgObj = t.messages?.[t.messages.length - 1];
+                const lastMsg = lastMsgObj?.message?.replace(/^\[\[QUOTE:[^|]+\|[\s\S]*?\]\]\n/, '') || '';
+                const isSelected = selectedTicket?.id === t.id;
+                const unreadCount = t.unreadCount || 0;
+
+                const lastMsgTime = lastMsgObj
+                  ? new Date(lastMsgObj.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : '';
+
+                const waPhone = customerPhone.replace(/[^0-9]/g, '');
+
+                return (
+                  <div
+                    key={t.id}
+                    onClick={() => handleSelectTicket(t)}
+                    className={`group relative flex items-start gap-3 p-3.5 cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border-s-4 border-emerald-600'
+                        : 'hover:bg-[var(--bg-card)]'
+                    }`}
+                  >
+                    {/* Customer Avatar Circle with Green Status Dot */}
+                    <div className="relative shrink-0">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-xs font-black text-white shadow-sm">
                         {customerName.charAt(0).toUpperCase()}
                       </span>
-                      <div className="overflow-hidden">
-                        <p className="truncate text-sm font-extrabold text-[var(--text-primary)]" dir="auto">
+                      <span
+                        className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full border-2 border-[var(--bg-primary)] bg-emerald-400"
+                        title={isAr ? 'متصل' : 'Online'}
+                      />
+                    </div>
+
+                    {/* Customer Info & Message Preview */}
+                    <div className="flex-1 min-w-0">
+                      {/* Line 1: Name + Time */}
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-xs font-black text-[var(--text-primary)]" dir="auto">
                           {customerName}
                         </p>
-                        {customerEmail && (
-                          <p
-                            className="truncate text-[11px] text-[var(--text-secondary)]"
-                            dir="ltr"
-                          >
-                            {customerEmail}
-                          </p>
-                        )}
+                        <span className="text-[10px] text-[var(--text-muted)] shrink-0">
+                          {lastMsgTime}
+                        </span>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="rounded-full bg-[#CCFF00]/15 px-2 py-0.5 text-[10px] font-bold text-[#CCFF00]">
-                        {msgsCount} {isAr ? 'رسائل' : 'msgs'}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteTicket(t.id);
-                        }}
-                        title={isAr ? 'مسح المحادثة' : 'Delete Chat'}
-                        className="rounded p-1 text-[var(--text-muted)] hover:bg-[#FF4444]/10 hover:text-[#FF4444]"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {lastMsg && (
-                    <p
-                      className="mt-2 line-clamp-1 text-xs text-[var(--text-secondary)]"
-                      dir="auto"
-                    >
-                      {lastMsg}
-                    </p>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </Paper>
-
-        {/* Main Chat Thread Window */}
-        <Paper
-          sx={{ p: 0, borderRadius: 3 }}
-          className="lg:col-span-8 flex h-[72vh] min-h-[480px] flex-col justify-between overflow-hidden"
-        >
-          {selected ? (
-            <>
-              {/* Chat Header */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--bg-primary)] px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#CCFF00] text-sm font-black text-black">
-                    {(selected.user?.name || 'C').charAt(0).toUpperCase()}
-                  </span>
-                  <div>
-                    <p className="text-base font-extrabold text-[var(--text-primary)]" dir="auto">
-                      {selected.user?.name || (isAr ? 'عميل' : 'Customer')}
-                    </p>
-                    <p className="text-xs text-[var(--text-secondary)]" dir="ltr">
-                      {selected.user?.email}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleDeleteTicket(selected.id)}
-                  className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#FF4444]/40 bg-[#FF4444]/10 px-3 py-1.5 text-xs font-bold text-[#FF4444] hover:bg-[#FF4444] hover:text-white"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {isAr ? 'مسح المحادثة بالكامل' : 'Delete Chat'}
-                </button>
-              </div>
-
-              {/* Messages Stream */}
-              <div className="flex-1 space-y-3.5 overflow-y-auto p-5">
-                {selected.messages?.map((m: any) => {
-                  const parsed = parseQuotedMessage(m.message || '');
-                  const isAdminMsg = Boolean(m.isAdmin);
-                  const senderLabel = isAdminMsg
-                    ? isAr
-                      ? 'الأدمن / الدعم الفني'
-                      : 'Admin / Support'
-                    : selected.user?.name || (isAr ? 'العميل' : 'Customer');
-
-                  return (
-                    <div
-                      key={m.id}
-                      className={`flex flex-col ${
-                        isAdminMsg ? 'items-end' : 'items-start'
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[85%] sm:max-w-[75%] rounded-[14px] p-3.5 text-xs shadow-sm transition-all ${
-                          isAdminMsg
-                            ? 'rounded-te-none border border-[#CCFF00]/45 bg-[#CCFF00]/12'
-                            : 'rounded-ts-none border border-[var(--border)] bg-[var(--bg-primary)]'
-                        }`}
-                      >
-                        <div className="mb-1.5 flex items-center justify-between gap-4 border-b border-[var(--border)]/60 pb-1">
-                          <span
-                            className={`text-[11px] font-extrabold ${
-                              isAdminMsg ? 'text-[#CCFF00]' : 'text-[var(--text-primary)]'
-                            }`}
-                            dir="auto"
-                          >
-                            {senderLabel}
-                          </span>
-
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-[var(--text-muted)]" dir="ltr">
-                              {new Date(m.createdAt).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
+                      {/* Line 2: Message preview snippet + unread badge */}
+                      <div className="mt-0.5 flex items-center justify-between gap-2">
+                        <p className="truncate text-[11px] text-[var(--text-secondary)]" dir="auto">
+                          {lastMsgObj?.isAdmin && (
+                            <span className="inline-flex items-center me-1">
+                              {lastMsgObj.isRead ? (
+                                <CheckCheck className="h-3 w-3 text-[#53bdeb] inline" />
+                              ) : (
+                                <CheckCheck className="h-3 w-3 text-zinc-400 inline" />
+                              )}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setReplyingTo({
-                                  id: m.id,
-                                  sender: senderLabel,
-                                  text: parsed.body,
-                                })
-                              }
-                              title={isAr ? 'رد على هذه الرسالة' : 'Reply to this message'}
-                              className="inline-flex items-center gap-1 rounded border border-[var(--border)] bg-[var(--bg-card)] px-2 py-0.5 text-[10px] font-bold text-[var(--text-secondary)] hover:border-[#CCFF00] hover:text-[#CCFF00]"
-                            >
-                              <Reply className="h-3 w-3" />
-                              {isAr ? 'رد' : 'Reply'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteMessage(m.id)}
-                              title={isAr ? 'مسح الرسالة' : 'Delete message'}
-                              className="inline-flex items-center gap-1 rounded border border-transparent px-1.5 py-0.5 text-[10px] font-bold text-[var(--text-muted)] hover:border-[#FF4444]/40 hover:bg-[#FF4444]/10 hover:text-[#FF4444]"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              {isAr ? 'مسح' : 'Delete'}
-                            </button>
-                          </div>
-                        </div>
-
-                        {parsed.quoteText && (
-                          <div className="my-2 rounded-[8px] border-s-2 border-[#CCFF00] bg-black/25 px-3 py-1.5 text-[11px] text-[var(--text-secondary)]">
-                            <span className="block font-bold text-[#CCFF00]" dir="auto">
-                              {isAr
-                                ? `رداً على ${parsed.quoteSender}:`
-                                : `Replying to ${parsed.quoteSender}:`}
-                            </span>
-                            <p className="line-clamp-2 italic" dir="auto">
-                              {parsed.quoteText}
-                            </p>
-                          </div>
-                        )}
-
-                        <p
-                          className="text-sm leading-relaxed text-[var(--text-primary)] whitespace-pre-wrap"
-                          dir="auto"
-                        >
-                          {parsed.body}
+                          )}
+                          {lastMsgObj?.mediaUrl ? (isAr ? '📷 [صورة مرفقة]' : '📷 [Photo]') : lastMsg || (isAr ? 'بدء محادثة...' : 'New chat...')}
                         </p>
+
+                        {unreadCount > 0 && (
+                          <span className="flex h-4 min-w-[16px] shrink-0 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-black text-white">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Line 3: Phone number & Order Tag */}
+                      <div className="mt-1 flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
+                        {customerPhone && (
+                          <span className="font-mono" dir="ltr">
+                            {customerPhone}
+                          </span>
+                        )}
+                        {t.order?.orderNumber && (
+                          <span className="rounded bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 text-[9px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            {t.order.orderNumber}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </div>
 
-              {/* Chat Input Bar */}
-              <div className="border-t border-[var(--border)] bg-[var(--bg-primary)] p-4">
-                {replyingTo && (
-                  <div className="mb-2.5 flex items-center justify-between rounded-[8px] border border-[#CCFF00]/40 bg-[#CCFF00]/10 px-3 py-2 text-xs">
-                    <div className="overflow-hidden">
-                      <span className="font-bold text-[#CCFF00]" dir="auto">
-                        {isAr
-                          ? `الرد على رسالة (${replyingTo.sender}): `
-                          : `Replying to (${replyingTo.sender}): `}
-                      </span>
-                      <span className="line-clamp-1 text-[var(--text-secondary)]" dir="auto">
-                        {replyingTo.text}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setReplyingTo(null)}
-                      className="ms-2 rounded p-1 text-[var(--text-secondary)] hover:text-[#FF4444]"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
+                    {/* Quick WhatsApp External Link (Hover Button) */}
+                    {waPhone && (
+                      <a
+                        href={`https://wa.me/${waPhone}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title={isAr ? 'فتح واتساب العميل مباشرة' : 'Open customer WhatsApp'}
+                        className="hidden group-hover:flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-white hover:bg-emerald-500 shadow-sm shrink-0"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                      </a>
+                    )}
                   </div>
-                )}
+                );
+              })
+            )}
+          </div>
+        </div>
 
-                <form onSubmit={handleReply} className="flex items-center gap-2.5">
-                  <input
-                    type="text"
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder={
-                      isAr
-                        ? 'اكتب ردك للعميل هنا...'
-                        : 'Type your reply to the customer...'
-                    }
-                    className="flex-1 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-5 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#CCFF00]"
-                  />
-                  <button
-                    type="submit"
-                    disabled={sending || !reply.trim()}
-                    className="inline-flex h-11 items-center gap-2 rounded-full bg-[#CCFF00] px-6 text-xs sm:text-sm font-extrabold text-black hover:bg-[#B8E600] disabled:opacity-50"
-                  >
-                    <Send className="h-4 w-4" />
-                    <span>{isAr ? 'إرسال الرد' : 'Send Reply'}</span>
-                  </button>
-                </form>
-              </div>
-            </>
+        {/* ----------------------------------------------------------- */}
+        {/* RIGHT COLUMN: WHATSAPP ACTIVE CHAT THREAD                   */}
+        {/* ----------------------------------------------------------- */}
+        <div className="lg:col-span-8 xl:col-span-8 flex flex-col h-full overflow-hidden">
+          {selectedTicket ? (
+            <WhatsAppChatView
+              ticket={selectedTicket}
+              isAdminView={true}
+              onSendMessage={handleSendMessage}
+              onDeleteMessage={handleDeleteMessage}
+              onDeleteTicket={handleDeleteTicket}
+              customerWhatsappNumber={selectedTicket.user?.whatsapp || selectedTicket.user?.phone}
+              customerName={selectedTicket.user?.name}
+              customerOrder={selectedTicket.order}
+            />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-[var(--text-secondary)]">
-              <User className="mb-2 h-8 w-8 text-[#CCFF00]" />
-              <p>
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center text-[var(--text-secondary)]">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-600/10 text-emerald-600 mb-3">
+                <MessageSquare className="h-8 w-8" />
+              </span>
+              <h2 className="text-base font-bold text-[var(--text-primary)]">
+                {isAr ? 'نظام محادثات واتساب ويب لخدمة عملاء GigaDrop' : 'GigaDrop WhatsApp Web Customer Support'}
+              </h2>
+              <p className="mt-1 max-w-sm text-xs text-[var(--text-muted)]">
                 {isAr
-                  ? 'اختر محادثة عميل من القائمة لعرض الرسائل والرد عليها'
-                  : 'Select a customer conversation to view and reply'}
+                  ? 'اختر أي محادثة عميل من القائمة الجانبية لبدء المحادثة، إرسال سكرين شوت وصور الهارد، وإرسال الردود السريعة.'
+                  : 'Select any customer conversation from the sidebar to chat, send screenshots, and dispatch quick replies.'}
               </p>
             </div>
           )}
-        </Paper>
+        </div>
       </div>
     </div>
   );

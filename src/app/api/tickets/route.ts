@@ -32,7 +32,10 @@ export async function GET(req: Request) {
       where,
       include: {
         user: {
-          select: { id: true, name: true, email: true, phone: true },
+          select: { id: true, name: true, email: true, phone: true, whatsapp: true, avatar: true },
+        },
+        order: {
+          select: { id: true, orderNumber: true, totalGB: true, totalPrice: true, status: true },
         },
         messages: {
           orderBy: { createdAt: 'asc' },
@@ -41,7 +44,18 @@ export async function GET(req: Request) {
       orderBy: { updatedAt: 'desc' },
     });
 
-    return NextResponse.json({ tickets });
+    const isCustomer = sessionUser.role === 'CUSTOMER';
+    const enrichedTickets = tickets.map((t) => {
+      const unreadCount = t.messages.filter((m) =>
+        isCustomer ? m.isAdmin && !m.isRead : !m.isAdmin && !m.isRead
+      ).length;
+      return {
+        ...t,
+        unreadCount,
+      };
+    });
+
+    return NextResponse.json({ tickets: enrichedTickets });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch tickets' }, { status: 500 });
   }
@@ -62,27 +76,33 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       userId,
+      orderId,
       subject,
       priority = 'HIGH',
       message,
+      mediaUrl,
+      mediaType,
       replyToSender,
       replyToText,
     } = body;
 
-    if (!message || !message.trim()) {
+    const trimmedMsg = (message || '').trim();
+    if (!trimmedMsg && !mediaUrl) {
       return NextResponse.json(
-        { error: 'Message is required' },
+        { error: 'Message or media attachment is required' },
         { status: 400 }
       );
     }
+
+    const finalMessage = trimmedMsg || (mediaType === 'image' ? '[صورة]' : '[ملف]');
 
     const isCustomer = sessionUser.role === 'CUSTOMER';
     const targetUserId = isCustomer ? sessionUser.id : userId || sessionUser.id;
 
     const formattedMessage =
       replyToText && replyToText.trim()
-        ? `[[QUOTE:${replyToSender || 'Message'}|${replyToText.trim()}]]\n${message.trim()}`
-        : message.trim();
+        ? `[[QUOTE:${replyToSender || 'Message'}|${replyToText.trim()}]]\n${finalMessage}`
+        : finalMessage;
 
     // If customer already has an open chat thread, append to it instead of creating duplicates
     const existingTicket = await prisma.ticket.findFirst({
@@ -96,16 +116,24 @@ export async function POST(req: Request) {
           ticketId: existingTicket.id,
           senderId: sessionUser.id,
           message: formattedMessage,
+          mediaUrl: mediaUrl || null,
+          mediaType: mediaType || (mediaUrl ? 'image' : null),
           isAdmin: !isCustomer,
         },
       });
 
       const updatedTicket = await prisma.ticket.update({
         where: { id: existingTicket.id },
-        data: { updatedAt: new Date() },
+        data: {
+          updatedAt: new Date(),
+          ...(orderId && { orderId }),
+        },
         include: {
           user: {
-            select: { id: true, name: true, email: true, phone: true },
+            select: { id: true, name: true, email: true, phone: true, whatsapp: true, avatar: true },
+          },
+          order: {
+            select: { id: true, orderNumber: true, totalGB: true, totalPrice: true, status: true },
           },
           messages: {
             orderBy: { createdAt: 'asc' },
@@ -120,6 +148,7 @@ export async function POST(req: Request) {
     const ticket = await prisma.ticket.create({
       data: {
         userId: targetUserId,
+        orderId: orderId || null,
         subject: subject?.trim() || `${sessionUser.name || 'عميل'}`,
         priority,
         status: 'OPEN',
@@ -127,13 +156,18 @@ export async function POST(req: Request) {
           create: {
             senderId: sessionUser.id,
             message: formattedMessage,
+            mediaUrl: mediaUrl || null,
+            mediaType: mediaType || (mediaUrl ? 'image' : null),
             isAdmin: !isCustomer,
           },
         },
       },
       include: {
         user: {
-          select: { id: true, name: true, email: true, phone: true },
+          select: { id: true, name: true, email: true, phone: true, whatsapp: true, avatar: true },
+        },
+        order: {
+          select: { id: true, orderNumber: true, totalGB: true, totalPrice: true, status: true },
         },
         messages: {
           orderBy: { createdAt: 'asc' },

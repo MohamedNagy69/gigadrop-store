@@ -92,6 +92,7 @@ model Order {
   items            OrderItem[]
   statusHistory    OrderStatusHistory[]
   payments         Payment[]
+  tickets          Ticket[]
 }
 
 enum OrderStatus {
@@ -184,6 +185,8 @@ model Ticket {
   id         String          @id @default(uuid())
   userId     String
   user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId    String?
+  order      Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
   subject    String
   priority   Priority        @default(MEDIUM)
   status     TicketStatus    @default(OPEN)
@@ -213,6 +216,9 @@ model TicketMessage {
   ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   senderId  String
   message   String   @db.Text
+  mediaUrl  String?
+  mediaType String?  // 'image' | 'audio' | 'file'
+  isRead    Boolean  @default(false)
   isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
 }

@@ -25,7 +25,8 @@ export async function GET(
     const ticket = await prisma.ticket.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, email: true, phone: true } },
+        user: { select: { id: true, name: true, email: true, phone: true, whatsapp: true, avatar: true } },
+        order: { select: { id: true, orderNumber: true, totalGB: true, totalPrice: true, status: true, customerName: true, phone: true, address: true } },
         messages: { orderBy: { createdAt: 'asc' } },
       },
     });
@@ -39,7 +40,27 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    return NextResponse.json({ ticket });
+    // Auto mark incoming messages as read (like WhatsApp blue ticks)
+    await prisma.ticketMessage.updateMany({
+      where: {
+        ticketId: id,
+        isAdmin: !isAdmin,
+        isRead: false,
+      },
+      data: { isRead: true },
+    });
+
+    // Re-fetch to return latest isRead statuses
+    const refreshedTicket = await prisma.ticket.findUnique({
+      where: { id },
+      include: {
+        user: { select: { id: true, name: true, email: true, phone: true, whatsapp: true, avatar: true } },
+        order: { select: { id: true, orderNumber: true, totalGB: true, totalPrice: true, status: true, customerName: true, phone: true, address: true } },
+        messages: { orderBy: { createdAt: 'asc' } },
+      },
+    });
+
+    return NextResponse.json({ ticket: refreshedTicket });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to load ticket' }, { status: 500 });
   }
@@ -78,29 +99,36 @@ export async function POST(
 
     const {
       message,
+      mediaUrl,
+      mediaType,
       status,
       replyToSender,
       replyToText,
     } = await req.json();
 
-    if (!message || !message.trim()) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    const trimmedMsg = (message || '').trim();
+    if (!trimmedMsg && !mediaUrl) {
+      return NextResponse.json({ error: 'Message or media attachment is required' }, { status: 400 });
     }
 
     // Anti-Spoofing: Derive sender identity and admin status strictly from session
     const senderId = sessionUser.id;
     const senderIsAdmin = isAdmin;
 
+    const finalMessage = trimmedMsg || (mediaType === 'image' ? '[صورة]' : '[ملف]');
+
     const formattedMessage =
       replyToText && replyToText.trim()
-        ? `[[QUOTE:${replyToSender || 'Message'}|${replyToText.trim()}]]\n${message.trim()}`
-        : message.trim();
+        ? `[[QUOTE:${replyToSender || 'Message'}|${replyToText.trim()}]]\n${finalMessage}`
+        : finalMessage;
 
     const msg = await prisma.ticketMessage.create({
       data: {
         ticketId: id,
         senderId,
         message: formattedMessage,
+        mediaUrl: mediaUrl || null,
+        mediaType: mediaType || (mediaUrl ? 'image' : null),
         isAdmin: senderIsAdmin,
       },
     });
@@ -112,7 +140,8 @@ export async function POST(
         updatedAt: new Date(),
       },
       include: {
-        user: { select: { id: true, name: true, email: true, phone: true } },
+        user: { select: { id: true, name: true, email: true, phone: true, whatsapp: true, avatar: true } },
+        order: { select: { id: true, orderNumber: true, totalGB: true, totalPrice: true, status: true, customerName: true, phone: true, address: true } },
         messages: { orderBy: { createdAt: 'asc' } },
       },
     });
