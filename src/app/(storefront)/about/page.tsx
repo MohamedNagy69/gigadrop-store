@@ -41,7 +41,7 @@ export default function AboutPage() {
 
   return (
     <div className="pt-32 pb-20">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 space-y-16">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8 space-y-16">
         <div className="max-w-3xl">
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#CCFF00]">
             {isAr ? 'عن GIGADROP' : 'ABOUT GIGADROP'}

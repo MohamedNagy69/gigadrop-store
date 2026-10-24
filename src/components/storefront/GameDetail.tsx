@@ -178,7 +178,7 @@ export default function GameDetail({
 
   return (
     <div className="pt-28 pb-20">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
         {/* Back button */}
         <Link
           href="/#library"

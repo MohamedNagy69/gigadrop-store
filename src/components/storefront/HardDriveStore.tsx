@@ -181,7 +181,7 @@ export default function HardDriveStore() {
         className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[750px] rounded-full bg-[#CCFF00]/[0.05] blur-[150px] -z-10"
       />
 
-      <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">

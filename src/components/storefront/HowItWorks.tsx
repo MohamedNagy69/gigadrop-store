@@ -32,8 +32,8 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-16">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+    <section id="how-it-works" className="py-20">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-8 sm:p-14">
           {/* Large "G" Watermark */}
           <div

@@ -108,7 +108,7 @@ export default function GameGrid({
     <>
       {showCategoryBanner && (
         <div className="border-b border-[var(--border)] bg-[var(--bg-secondary)] py-12">
-          <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
             <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#CCFF00]">
               {locale === 'ar' ? 'تصفح حسب التصنيف' : 'BROWSE BY CATEGORY'}
             </span>
@@ -130,7 +130,7 @@ export default function GameGrid({
         </div>
       )}
       <section id="library" className="py-20">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>

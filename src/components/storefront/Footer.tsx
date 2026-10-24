@@ -12,8 +12,8 @@ export default function Footer() {
   const t = translations[locale];
 
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--bg-primary)] py-10">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+    <footer className="border-t border-[var(--border)] bg-[var(--bg-primary)] py-12">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           {/* Left: Logo */}
           <Link href="/" className="flex items-center gap-2" dir="ltr">

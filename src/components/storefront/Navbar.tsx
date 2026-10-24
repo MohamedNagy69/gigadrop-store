@@ -55,7 +55,7 @@ export default function Navbar() {
           : 'border-b border-white/[0.06] bg-[var(--bg-primary)]/60 backdrop-blur-md'
       }`}
     >
-      <div className="mx-auto flex h-20 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-20 max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* Start: Brand Logo + Clean Minimal Links */}
         <div className="flex items-center gap-7 lg:gap-9">
           <Link
