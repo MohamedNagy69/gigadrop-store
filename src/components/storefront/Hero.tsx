@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { ShieldCheck, Gamepad2, ArrowRight, ArrowLeft, Flame, HardDrive } from 'lucide-react';
 import { useThemeStore } from '@/stores/themeStore';
 import { translations } from '@/lib/i18n';
+import HeroStarfield from '@/components/storefront/HeroStarfield';
 
 const HeroScene = dynamic(() => import('@/components/three/HeroScene'), {
   ssr: false,
@@ -108,6 +109,9 @@ export default function Hero() {
         isAr ? 'font-cairo' : 'font-sans'
       }`}
     >
+      {/* Full-Screen Interactive Cyber Starfield across Hero */}
+      <HeroStarfield />
+
       {/* Dynamic Ambient Background Aura & Tactical Cyber Grid */}
       <div
         aria-hidden="true"
