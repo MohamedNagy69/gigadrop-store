@@ -5,7 +5,7 @@ import { getToken } from 'next-auth/jwt';
 const secret =
   process.env.NEXTAUTH_SECRET || 'gigadrop-super-secret-jwt-key-2026-cairo-egypt';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = await getToken({ req, secret });
 
@@ -74,6 +74,8 @@ export async function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+export const middleware = proxy;
 
 export const config = {
   matcher: [
