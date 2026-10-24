@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import dynamic from 'next/dynamic';
-import { ShieldCheck, Gamepad2, ArrowRight, ArrowLeft, Flame, HardDrive } from 'lucide-react';
+import { ShieldCheck, Gamepad2, ArrowRight, ArrowLeft, Flame, HardDrive, ChevronDown } from 'lucide-react';
 import { useThemeStore } from '@/stores/themeStore';
 import { translations } from '@/lib/i18n';
 import HeroStarfield from '@/components/storefront/HeroStarfield';
@@ -105,7 +105,7 @@ export default function Hero() {
     <section
       ref={heroRef}
       dir={isAr ? 'rtl' : 'ltr'}
-      className={`relative min-h-[86vh] overflow-hidden border-b border-[var(--border)] pt-28 pb-20 sm:pt-36 sm:pb-24 flex items-center ${
+      className={`relative min-h-screen min-h-[100dvh] w-full overflow-hidden border-b border-[var(--border)] pt-24 pb-16 sm:pt-28 sm:pb-20 flex items-center justify-center ${
         isAr ? 'font-cairo' : 'font-sans'
       }`}
     >
@@ -223,6 +223,18 @@ export default function Hero() {
 
         </div>
       </div>
+
+      {/* Subtle Scroll Down Indicator */}
+      <a
+        href="#library"
+        aria-label="Scroll down to game library"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity z-20 group"
+      >
+        <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#CCFF00] drop-shadow-[0_0_8px_rgba(204,255,0,0.4)]">
+          {isAr ? 'مرر للأسفل' : 'SCROLL'}
+        </span>
+        <ChevronDown className="h-4 w-4 text-[#CCFF00] transition-transform duration-300 group-hover:translate-y-1 animate-bounce" />
+      </a>
     </section>
   );
 }
