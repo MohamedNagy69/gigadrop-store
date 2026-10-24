@@ -4,12 +4,13 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   req: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const order = await prisma.order.findFirst({
       where: {
-        OR: [{ id: params.orderId }, { orderNumber: params.orderId }],
+        OR: [{ id: orderId }, { orderNumber: orderId }],
       },
       include: { payments: true },
     });

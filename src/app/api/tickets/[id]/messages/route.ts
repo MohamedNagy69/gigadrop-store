@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     const sessionUser = session?.user as any;
 
@@ -22,7 +23,7 @@ export async function GET(
       sessionUser.role === 'SUPPORT';
 
     const ticket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: { select: { id: true, name: true, email: true, phone: true } },
         messages: { orderBy: { createdAt: 'asc' } },
@@ -46,9 +47,10 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     const sessionUser = session?.user as any;
 
@@ -62,7 +64,7 @@ export async function POST(
       sessionUser.role === 'SUPPORT';
 
     const ticket = await prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!ticket) {
@@ -96,7 +98,7 @@ export async function POST(
 
     const msg = await prisma.ticketMessage.create({
       data: {
-        ticketId: params.id,
+        ticketId: id,
         senderId,
         message: formattedMessage,
         isAdmin: senderIsAdmin,
@@ -104,7 +106,7 @@ export async function POST(
     });
 
     const updatedTicket = await prisma.ticket.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: status || (senderIsAdmin ? 'IN_PROGRESS' : 'OPEN'),
         updatedAt: new Date(),
@@ -134,12 +136,13 @@ export async function POST(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { status, priority, assignedTo } = await req.json();
     const ticket = await prisma.ticket.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(status && { status }),
         ...(priority && { priority }),
@@ -154,9 +157,10 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { searchParams } = new URL(req.url);
     const messageId = searchParams.get('messageId');
 
@@ -166,7 +170,7 @@ export async function DELETE(
       });
 
       const updatedTicket = await prisma.ticket.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
           user: { select: { id: true, name: true, email: true, phone: true } },
           messages: { orderBy: { createdAt: 'asc' } },
@@ -178,7 +182,7 @@ export async function DELETE(
 
     // Delete entire chat thread if no messageId specified
     await prisma.ticket.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true, deletedTicket: true });

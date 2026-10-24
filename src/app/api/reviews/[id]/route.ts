@@ -6,15 +6,16 @@ import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
 
     // Allow anonymous or customer helpful increments
     if (body.incrementHelpful) {
       const updated = await prisma.review.update({
-        where: { id: params.id },
+        where: { id },
         data: { helpfulCount: { increment: 1 } },
       });
       return NextResponse.json({ review: updated });
@@ -26,7 +27,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const review = await prisma.review.findUnique({ where: { id: params.id } });
+    const review = await prisma.review.findUnique({ where: { id } });
     if (!review) {
       return NextResponse.json({ error: 'Review not found' }, { status: 404 });
     }
@@ -53,7 +54,7 @@ export async function PUT(
     }
 
     const updated = await prisma.review.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
     });
     return NextResponse.json({ review: updated });
@@ -64,16 +65,17 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     const sessionUser = session?.user as any;
     if (!sessionUser?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const review = await prisma.review.findUnique({ where: { id: params.id } });
+    const review = await prisma.review.findUnique({ where: { id } });
     if (!review) {
       return NextResponse.json({ error: 'Review not found' }, { status: 404 });
     }
@@ -88,7 +90,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await prisma.review.delete({ where: { id: params.id } });
+    await prisma.review.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete review' }, { status: 500 });

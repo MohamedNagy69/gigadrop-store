@@ -11,8 +11,9 @@ export const dynamic = 'force-dynamic';
 export default async function GameDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const rateSetting = await safePrismaQuery(
     (db) => db.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),
     null,
@@ -23,7 +24,7 @@ export default async function GameDetailPage({
   const game = await safePrismaQuery(
     (db) =>
       db.game.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
           reviews: {
             where: { isVisible: true },
@@ -42,8 +43,8 @@ export default async function GameDetailPage({
   if (!game) {
     const fallbackMatch = FALLBACK_GAMES.find(
       (g) =>
-        g.id === params.id ||
-        g.name.toLowerCase() === decodeURIComponent(params.id).toLowerCase()
+        g.id === id ||
+        g.name.toLowerCase() === decodeURIComponent(id).toLowerCase()
     );
 
     if (!fallbackMatch) {

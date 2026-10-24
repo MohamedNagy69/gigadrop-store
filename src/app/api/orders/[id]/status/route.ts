@@ -5,9 +5,10 @@ import { requireAdminSession } from '@/lib/adminGuard';
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const auth = await requireAdminSession();
     if (!auth.authorized) return auth.response;
 
@@ -15,7 +16,7 @@ export async function PATCH(
     const { status, paymentStatus, note, changedBy = 'Admin', notes } = body;
 
     const existing = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -23,7 +24,7 @@ export async function PATCH(
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(status && { status }),
         ...(paymentStatus && {

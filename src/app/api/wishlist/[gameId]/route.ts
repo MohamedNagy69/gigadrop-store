@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
   try {
+    const { gameId } = await params;
     const session = await getServerSession(authOptions);
     const sessionUser = session?.user as any;
     if (!sessionUser?.id) {
@@ -16,7 +17,7 @@ export async function DELETE(
     }
 
     await prisma.wishlist.deleteMany({
-      where: { userId: sessionUser.id, gameId: params.gameId },
+      where: { userId: sessionUser.id, gameId },
     });
 
     return NextResponse.json({ success: true });

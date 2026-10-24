@@ -8,8 +8,9 @@ import { safePrismaQuery } from '@/lib/safePrisma';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const rateSetting = await safePrismaQuery(
       (db) => db.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),
@@ -21,7 +22,7 @@ export async function GET(
     let game: any = await safePrismaQuery(
       (db) =>
         db.game.findUnique({
-          where: { id: params.id },
+          where: { id },
           include: {
             reviews: {
               where: { isVisible: true },
@@ -41,8 +42,8 @@ export async function GET(
     if (!game) {
       const fallback = FALLBACK_GAMES.find(
         (g) =>
-          g.id === params.id ||
-          g.name.toLowerCase() === decodeURIComponent(params.id).toLowerCase()
+          g.id === id ||
+          g.name.toLowerCase() === decodeURIComponent(id).toLowerCase()
       );
       if (fallback) {
         const similarGames = FALLBACK_GAMES
@@ -137,7 +138,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('GET /api/games/[id] error:', error);
-    const fallback = FALLBACK_GAMES.find((g) => g.id === params.id);
+    const fallback = FALLBACK_GAMES.find((g) => g.id === id);
     if (fallback) {
       return NextResponse.json({
         game: fallback,
@@ -151,9 +152,10 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const auth = await requireAdminSession();
     if (!auth.authorized) return auth.response;
 
@@ -166,7 +168,7 @@ export async function PUT(
     const sizeGB = body.sizeGB !== undefined ? parseFloat(String(body.sizeGB)) : undefined;
 
     const updated = await prisma.game.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(body.name !== undefined && { name: body.name }),
         ...(body.description !== undefined && { description: body.description }),
@@ -195,14 +197,15 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const auth = await requireAdminSession();
     if (!auth.authorized) return auth.response;
 
     await prisma.game.delete({
-      where: { id: params.id },
+      where: { id },
     });
     return NextResponse.json({ success: true });
   } catch (error) {

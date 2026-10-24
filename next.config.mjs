@@ -2,6 +2,9 @@
 const nextConfig = {
   poweredByHeader: false,
   images: {
+    formats: ['image/webp'],
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'shared.akamai.steamstatic.com' },

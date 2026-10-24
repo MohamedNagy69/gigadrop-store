@@ -7,9 +7,10 @@ import { sanitizePhone } from '@/lib/security';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     const sessionUser = session?.user as any;
 
@@ -23,12 +24,12 @@ export async function GET(
       sessionUser.role === 'SUPPORT';
 
     // Users can only view their own account unless admin
-    if (!isAdmin && sessionUser.id !== params.id) {
+    if (!isAdmin && sessionUser.id !== id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const customer = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         orders: {
           include: {
@@ -60,9 +61,10 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     const sessionUser = session?.user as any;
 
@@ -76,7 +78,7 @@ export async function PATCH(
       sessionUser.role === 'SUPPORT';
 
     // Users can only update their own account unless admin
-    if (!isAdmin && sessionUser.id !== params.id) {
+    if (!isAdmin && sessionUser.id !== id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -97,7 +99,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
     });
 
