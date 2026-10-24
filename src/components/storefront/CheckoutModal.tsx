@@ -332,7 +332,7 @@ export default function CheckoutModal() {
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                           hardDriveCapacity === cap
                             ? 'bg-[#CCFF00] text-black font-extrabold shadow-[0_0_10px_rgba(204,255,0,0.3)]'
-                            : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-white'
+                            : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)]'
                         }`}
                       >
                         {cap}

@@ -313,7 +313,7 @@ export default function HardDriveStore() {
                           className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
                             activeCapIndex === idx
                               ? 'bg-[#CCFF00] text-black font-black shadow-[0_0_10px_rgba(204,255,0,0.3)]'
-                              : 'border border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-white'
+                              : 'border border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)]'
                           }`}
                         >
                           {cap.size}

@@ -140,9 +140,9 @@ export default function Hero() {
             }`}
           >
             {/* Top Status Tag */}
-            <div className="hero-pill-tag mb-3 inline-flex items-center gap-2 rounded-full border border-[#CCFF00]/30 dark:border-[#CCFF00]/30 light:border-emerald-600/30 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-600/10 px-3.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800 shadow-[0_0_16px_rgba(204,255,0,0.15)]">
+            <div className="hero-pill-tag mb-3 inline-flex items-center gap-2 rounded-full border border-[#CCFF00]/30 dark:border-[#CCFF00]/30 light:border-emerald-600/30 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-500/10 px-3.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 shadow-[0_0_16px_rgba(204,255,0,0.15)] light:shadow-[0_2px_10px_rgba(5,150,105,0.1)]">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-600 opacity-75" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-500 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-600" />
               </span>
               <span>{t.availableAcrossCairo}</span>
@@ -153,7 +153,7 @@ export default function Hero() {
               <span className="hero-title-line-1 block text-white dark:text-white light:text-slate-950">
                 {t.heroTitleLine1}
               </span>
-              <span className="hero-title-line-2 block text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 drop-shadow-[0_0_28px_rgba(204,255,0,0.25)]">
+              <span className="hero-title-line-2 block text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 drop-shadow-[0_0_28px_rgba(204,255,0,0.25)] light:drop-shadow-[0_0_20px_rgba(5,150,105,0.2)]">
                 {t.heroTitleLine2}
               </span>
             </h1>
@@ -167,14 +167,14 @@ export default function Hero() {
             <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-2 sm:gap-3">
               
               {/* Hard Drive Options Badge */}
-              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40">
-                <HardDrive className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 shrink-0" />
+              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300/80 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40 light:hover:border-emerald-600/40">
+                <HardDrive className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-600 shrink-0" />
                 <span>{isAr ? 'شراء هارد جديد أو التحميل على هاردك' : 'Buy New Hard Drive or Load on Yours'}</span>
               </div>
 
               {/* Cash on Delivery Badge */}
-              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40">
-                <ShieldCheck className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 shrink-0" />
+              <div className="hero-badge-pill inline-flex items-center gap-2 rounded-full border border-white/10 dark:border-white/10 light:border-slate-300/80 bg-zinc-950/70 dark:bg-zinc-950/70 light:bg-white px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white dark:text-white light:text-slate-800 backdrop-blur-md shadow-sm transition-all hover:border-[#CCFF00]/40 light:hover:border-emerald-600/40">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-600 shrink-0" />
                 <span>{t.badgeCashOnDelivery}</span>
               </div>
 
@@ -182,7 +182,7 @@ export default function Hero() {
               <a
                 ref={magneticBtnRef}
                 href="#library"
-                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-emerald-700 px-4 sm:px-5 text-xs sm:text-sm font-black text-black light:text-white shadow-[0_0_24px_rgba(204,255,0,0.4)] light:shadow-[0_4px_16px_rgba(22,101,52,0.35)] transition-all hover:scale-105 hover:bg-[#B8E600] light:hover:bg-emerald-800"
+                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full bg-[#CCFF00] dark:bg-[#CCFF00] light:bg-gradient-to-r light:from-emerald-600 light:to-emerald-700 px-4 sm:px-5 text-xs sm:text-sm font-black text-black light:text-white shadow-[0_0_24px_rgba(204,255,0,0.4)] light:shadow-[0_4px_16px_rgba(5,150,105,0.35)] transition-all hover:scale-105 hover:bg-[#B8E600] light:hover:from-emerald-500 light:hover:to-emerald-600"
               >
                 <Gamepad2 className="h-4 w-4 transition-transform group-hover:rotate-12" />
                 <span>{t.browseLibraryBtn}</span>
@@ -196,7 +196,7 @@ export default function Hero() {
               {/* Hard Drive Store CTA Button */}
               <a
                 href="#hard-drives"
-                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full border border-[#CCFF00]/40 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:bg-emerald-600/10 px-3.5 sm:px-4 text-xs sm:text-sm font-black text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-800 hover:bg-[#CCFF00] hover:text-black dark:hover:bg-[#CCFF00] dark:hover:text-black transition-all hover:scale-105"
+                className="hero-badge-pill group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full border border-[#CCFF00]/40 bg-[#CCFF00]/10 dark:bg-[#CCFF00]/10 light:border-emerald-600/40 light:bg-emerald-500/10 px-3.5 sm:px-4 text-xs sm:text-sm font-black text-[#CCFF00] dark:text-[#CCFF00] light:text-emerald-700 hover:bg-[#CCFF00] hover:text-black dark:hover:bg-[#CCFF00] dark:hover:text-black light:hover:bg-emerald-600 light:hover:text-white transition-all hover:scale-105"
               >
                 <HardDrive className="h-3.5 w-3.5" />
                 <span>{isAr ? 'متجر الهاردات' : 'Hard Drives Store'}</span>
@@ -214,7 +214,7 @@ export default function Hero() {
                 style={{
                   background: isDark
                     ? 'radial-gradient(circle, rgba(204,255,0,0.18) 0%, rgba(204,255,0,0.03) 60%, transparent 80%)'
-                    : 'radial-gradient(circle, rgba(22,101,52,0.16) 0%, rgba(2,132,199,0.04) 60%, transparent 80%)',
+                    : 'radial-gradient(circle, rgba(5,150,105,0.2) 0%, rgba(2,132,199,0.05) 60%, transparent 80%)',
                 }}
               />
               <HeroScene />

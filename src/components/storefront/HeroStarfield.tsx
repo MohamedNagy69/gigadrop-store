@@ -181,9 +181,17 @@ export default function HeroStarfield() {
             colorGlow = `rgba(204, 255, 0, ${alpha * 0.35})`;
           }
         } else {
-          // Light Mode
-          colorCenter = `rgba(22, 101, 52, ${alpha * 0.85})`;
-          colorGlow = `rgba(22, 101, 52, ${alpha * 0.2})`;
+          // Light Mode: Vibrant Emerald, Mint, & Azure Glistening Cyber-Stars
+          if (star.colorType === 'lime') {
+            colorCenter = `rgba(5, 150, 105, ${alpha * 0.95})`;
+            colorGlow = `rgba(5, 150, 105, ${alpha * 0.28})`;
+          } else if (star.colorType === 'emerald') {
+            colorCenter = `rgba(16, 185, 129, ${alpha * 0.95})`;
+            colorGlow = `rgba(16, 185, 129, ${alpha * 0.28})`;
+          } else {
+            colorCenter = `rgba(2, 132, 199, ${alpha * 0.95})`;
+            colorGlow = `rgba(2, 132, 199, ${alpha * 0.28})`;
+          }
         }
 
         // 1. Draw outer soft luminous aura
@@ -224,9 +232,15 @@ export default function HeroStarfield() {
         const tailY = ss.y - Math.sin(ss.angle) * ss.length;
 
         const grad = ctx.createLinearGradient(tailX, tailY, ss.x, ss.y);
-        grad.addColorStop(0, 'rgba(204, 255, 0, 0)');
-        grad.addColorStop(0.7, `rgba(204, 255, 0, ${ss.opacity * 0.4})`);
-        grad.addColorStop(1, `rgba(240, 255, 200, ${ss.opacity * 0.95})`);
+        if (isDark) {
+          grad.addColorStop(0, 'rgba(204, 255, 0, 0)');
+          grad.addColorStop(0.7, `rgba(204, 255, 0, ${ss.opacity * 0.4})`);
+          grad.addColorStop(1, `rgba(240, 255, 200, ${ss.opacity * 0.95})`);
+        } else {
+          grad.addColorStop(0, 'rgba(2, 132, 199, 0)');
+          grad.addColorStop(0.65, `rgba(2, 132, 199, ${ss.opacity * 0.5})`);
+          grad.addColorStop(1, `rgba(5, 150, 105, ${ss.opacity * 0.95})`);
+        }
 
         ctx.beginPath();
         ctx.moveTo(tailX, tailY);
@@ -238,7 +252,9 @@ export default function HeroStarfield() {
         // Head spark
         ctx.beginPath();
         ctx.arc(ss.x, ss.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${ss.opacity})`;
+        ctx.fillStyle = isDark
+          ? `rgba(255, 255, 255, ${ss.opacity})`
+          : `rgba(5, 150, 105, ${ss.opacity})`;
         ctx.fill();
 
         if (ss.life >= ss.maxLife) {

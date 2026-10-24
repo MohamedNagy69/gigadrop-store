@@ -23,25 +23,25 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         palette: {
           mode: theme,
           primary: {
-            main: theme === 'dark' ? '#CCFF00' : '#166534',
-            contrastText: theme === 'dark' ? '#000000' : '#F8FAFC',
+            main: theme === 'dark' ? '#CCFF00' : '#059669',
+            contrastText: theme === 'dark' ? '#000000' : '#FFFFFF',
           },
           secondary: {
-            main: theme === 'dark' ? '#111111' : '#1E293B',
+            main: theme === 'dark' ? '#111111' : '#0F172A',
           },
           background: {
-            default: theme === 'dark' ? '#000000' : '#DCE3EC',
-            paper: theme === 'dark' ? '#111111' : '#E9EEF5',
+            default: theme === 'dark' ? '#000000' : '#F4F6F9',
+            paper: theme === 'dark' ? '#111111' : '#FFFFFF',
           },
           text: {
-            primary: theme === 'dark' ? '#FFFFFF' : '#0F172A',
+            primary: theme === 'dark' ? '#FFFFFF' : '#020617',
             secondary: theme === 'dark' ? '#999999' : '#334155',
           },
           error: {
-            main: theme === 'dark' ? '#FF4444' : '#B91C1C',
+            main: theme === 'dark' ? '#FF4444' : '#DC2626',
           },
           success: {
-            main: theme === 'dark' ? '#CCFF00' : '#166534',
+            main: theme === 'dark' ? '#CCFF00' : '#059669',
           },
         },
         typography: {
@@ -55,12 +55,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             styleOverrides: {
               root: {
                 backgroundImage: 'none',
-                backgroundColor: theme === 'dark' ? '#111111' : '#E9EEF5',
-                border: `1px solid ${theme === 'dark' ? '#222222' : '#C2CDDC'}`,
+                backgroundColor: theme === 'dark' ? '#111111' : '#FFFFFF',
+                border: `1px solid ${theme === 'dark' ? '#222222' : '#E2E8F0'}`,
                 boxShadow:
                   theme === 'dark'
                     ? 'none'
-                    : '0 6px 22px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.45)',
+                    : '0 4px 20px -2px rgba(15, 23, 42, 0.05), inset 0 1px 0 #FFFFFF',
               },
             },
           },
@@ -69,9 +69,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               root:
                 theme === 'light'
                   ? {
-                      backgroundColor: 'rgba(22, 101, 52, 0.14) !important',
-                      color: '#14532D !important',
-                      border: '1px solid rgba(22, 101, 52, 0.3)',
+                      backgroundColor: 'rgba(5, 150, 105, 0.08) !important',
+                      color: '#047857 !important',
+                      border: '1px solid rgba(5, 150, 105, 0.25)',
+                      fontWeight: 700,
                     }
                   : {},
             },
@@ -79,11 +80,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           MuiTableCell: {
             styleOverrides: {
               head: {
-                color: theme === 'dark' ? '#CCFF00 !important' : '#166534 !important',
-                borderBottomColor: theme === 'dark' ? '#222222' : '#C2CDDC',
+                color: theme === 'dark' ? '#CCFF00 !important' : '#047857 !important',
+                borderBottomColor: theme === 'dark' ? '#222222' : '#E2E8F0',
+                fontWeight: 700,
               },
               body: {
-                borderBottomColor: theme === 'dark' ? '#222222' : '#CFD8E3',
+                borderBottomColor: theme === 'dark' ? '#222222' : '#F1F5F9',
               },
             },
           },
