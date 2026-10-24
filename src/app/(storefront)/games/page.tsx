@@ -10,9 +10,10 @@ export const dynamic = 'force-dynamic';
 export default async function GenresPage({
   searchParams,
 }: {
-  searchParams: { genre?: string };
+  searchParams: Promise<{ genre?: string }>;
 }) {
-  const activeGenre = searchParams?.genre || 'All';
+  const resolvedSearchParams = await searchParams;
+  const activeGenre = resolvedSearchParams?.genre || 'All';
 
   const rateSetting = await safePrismaQuery(
     (db) => db.siteSetting.findUnique({ where: { key: 'ratePerGB' } }),

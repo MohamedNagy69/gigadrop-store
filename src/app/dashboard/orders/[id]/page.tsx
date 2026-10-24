@@ -8,15 +8,16 @@ export const dynamic = 'force-dynamic';
 export default async function CustomerOrderDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   let order: any = null;
 
   try {
     order = await Promise.race([
       prisma.order.findFirst({
         where: {
-          OR: [{ id: params.id }, { orderNumber: params.id }],
+          OR: [{ id }, { orderNumber: id }],
         },
         include: {
           items: { include: { game: true } },
@@ -33,8 +34,8 @@ export default async function CustomerOrderDetailPage({
   if (!order) {
     // If not found in DB or DB unreachable, provide safe fallback order
     order = {
-      id: params.id,
-      orderNumber: `ORD-${params.id.slice(-6).toUpperCase()}`,
+      id,
+      orderNumber: `ORD-${id.slice(-6).toUpperCase()}`,
       status: 'PROCESSING',
       driveType: 'EXTERNAL_HDD',
       capacityGB: 1000,
